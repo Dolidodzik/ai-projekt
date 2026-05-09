@@ -164,8 +164,18 @@ Route::prefix('admin_panel')->middleware('admin')->group(function () {
         return redirect('/admin_panel/announcements/'.$announcement->id);
     })->name('admin.announcements.update');
 
+    Route::post('/announcements/{announcement}/delete', function (Announcement $announcement) {
+        $announcement->delete();
+        return redirect('/admin_panel/announcements');
+    })->name('admin.announcements.delete');
+
     Route::get('/announcments', fn () => redirect('/admin_panel/announcements'));
     Route::get('/announcments/new', fn () => redirect('/admin_panel/announcements/new'));
     Route::get('/announcments/{announcement}', fn ($announcement) => redirect('/admin_panel/announcements/'.$announcement));
     Route::get('/announcments/{announcement}/edit', fn ($announcement) => redirect('/admin_panel/announcements/'.$announcement.'/edit'));
+    Route::post('/announcments/{announcement}/delete', function ($announcement) {
+        $item = Announcement::query()->findOrFail($announcement);
+        $item->delete();
+        return redirect('/admin_panel/announcements');
+    });
 });

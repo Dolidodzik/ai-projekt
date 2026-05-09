@@ -26,6 +26,10 @@
                             <div class="flex items-center gap-3">
                                 <a href="/admin_panel/announcements/{{ $announcement->id }}/edit" class="text-[#1754d8] hover:underline">edycja</a>
                                 <a href="/admin_panel/announcements/{{ $announcement->id }}" class="text-[#1754d8] hover:underline">detale</a>
+                                <form method="POST" action="/admin_panel/announcements/{{ $announcement->id }}/delete" onsubmit="return confirm('czy na pewno usunąć?')">
+                                    @csrf
+                                    <button type="submit" class="text-red-600 hover:underline">usuń</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

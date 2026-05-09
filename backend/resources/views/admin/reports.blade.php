@@ -3,5 +3,5 @@
 @section('title', 'zgłoszenia')
 
 @section('content')
-    <h1 class="text-2xl font-semibold text-[#1754d8]">zgłoszenia</h1>
+    <h1 class="text-2xl font-semibold text-[#1754d8]">Zgłoszenia</h1>
 @endsection
