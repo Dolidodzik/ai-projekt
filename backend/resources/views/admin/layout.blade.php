@@ -10,9 +10,9 @@
     <div class="min-h-screen grid grid-cols-1 md:grid-cols-[220px_1fr]">
         <aside class="border-r border-slate-200 p-4">
             <nav class="space-y-2">
-                <a href="/admin_panel/" class="block rounded-md px-3 py-2 hover:bg-slate-100">statystyki</a>
-                <a href="/admin_panel/reports" class="block rounded-md px-3 py-2 hover:bg-slate-100">zgłoszenia</a>
-                <a href="/admin_panel/announcements" class="block rounded-md px-3 py-2 hover:bg-slate-100">ogłoszenia</a>
+                <a href="/admin_panel/" class="block rounded-md px-3 py-2 hover:bg-slate-100">Statystyki</a>
+                <a href="/admin_panel/reports" class="block rounded-md px-3 py-2 hover:bg-slate-100">Zgłoszenia</a>
+                <a href="/admin_panel/announcements" class="block rounded-md px-3 py-2 hover:bg-slate-100">Ogłoszenia</a>
             </nav>
         </aside>
         <div class="flex min-h-screen flex-col">

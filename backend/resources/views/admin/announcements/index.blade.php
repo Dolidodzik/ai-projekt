@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mb-4 flex items-center justify-between gap-3">
-        <h1 class="text-2xl font-semibold text-[#1754d8]">ogłoszenia</h1>
+        <h1 class="text-2xl font-semibold text-[#1754d8]">Ogłoszenia</h1>
         <a href="/admin_panel/announcements/new" class="rounded-md bg-[#1754d8] px-4 py-2 font-medium text-white">nowe</a>
     </div>
 
