@@ -24,14 +24,22 @@ Route::post('/login', function (Request $request) {
 
     $user = User::where('email', $credentials['email'])->first();
 
-    if (! $user || ! Hash::check($credentials['password'], $user->password_hash) || ! $user->is_admin) {
-        abort(403);
+    if (! $user || ! Hash::check($credentials['password'], $user->password_hash)) {
+        return back()
+            ->withErrors(['password' => 'Bad password.'])
+            ->onlyInput('email');
+    }
+
+    if (! $user->is_admin) {
+        return back()
+            ->withErrors(['email' => 'You do not have admin privileges.'])
+            ->onlyInput('email');
     }
 
     Auth::login($user);
     $request->session()->regenerate();
 
-    return redirect()->intended('/admin_panel/');
+    return redirect('/admin_panel/');
 });
 
 Route::post('/logout', function (Request $request) {
