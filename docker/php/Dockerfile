@@ -34,14 +34,14 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 ARG UID=1000
 ARG GID=1000
-RUN addgroup -g ${GID} dev \
-    && adduser -D -u ${UID} -G dev -s /bin/bash dev \
+RUN if ! getent group ${GID} >/dev/null; then addgroup -g ${GID} dev; fi \
+    && if ! getent passwd ${UID} >/dev/null; then adduser -D -u ${UID} -G "$(getent group ${GID} | cut -d: -f1)" -s /bin/bash dev; fi \
     && mkdir -p /var/www/html \
-    && chown -R dev:dev /var/www/html
+    && chown -R ${UID}:${GID} /var/www/html
 
 WORKDIR /var/www/html
 
-USER dev
+USER ${UID}:${GID}
 
 EXPOSE 9000
 

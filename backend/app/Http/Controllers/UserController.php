@@ -18,14 +18,14 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password_hash' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', 'min:8'],
             'is_admin' => ['sometimes', 'boolean'],
         ]);
 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password_hash' => $data['password_hash'],
+            'password_hash' => $data['password'],
             'is_admin' => $data['is_admin'] ?? false,
         ]);
 
