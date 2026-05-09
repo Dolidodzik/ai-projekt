@@ -32,6 +32,12 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+RUN { \
+        echo "upload_max_filesize=50M"; \
+        echo "post_max_size=50M"; \
+        echo "max_file_uploads=20"; \
+    } > /usr/local/etc/php/conf.d/uploads.ini
+
 ARG UID=1000
 ARG GID=1000
 RUN addgroup -g ${GID} dev \
