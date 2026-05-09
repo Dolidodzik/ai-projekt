@@ -9,6 +9,7 @@
 <body class="min-h-screen bg-white text-slate-900">
     <div class="min-h-screen grid grid-cols-1 md:grid-cols-[220px_1fr]">
         <aside class="flex min-h-screen flex-col border-r border-slate-200 p-4">
+            <div class="mb-8 px-3 text-3xl font-bold">Autobusy</div>
             <nav class="space-y-2">
                 <a href="/admin_panel/" class="block rounded-md px-3 py-2 hover:bg-slate-100">Statystyki</a>
                 <a href="/admin_panel/reports" class="block rounded-md px-3 py-2 hover:bg-slate-100">Zgłoszenia</a>
