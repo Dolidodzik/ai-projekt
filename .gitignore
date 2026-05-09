@@ -25,3 +25,5 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+
+backend/public/uploads/announcements/
