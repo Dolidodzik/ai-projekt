@@ -17,6 +17,30 @@ services:
     networks:
       - ai2_net
 
+  scheduler:
+    build:
+      context: ./docker/php
+      args:
+        UID: ${HOST_UID:-1000}
+        GID: ${HOST_GID:-1000}
+    container_name: ai2_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: >
+      sh -c "until php artisan about >/dev/null 2>&1; do sleep 2; done;
+      until php -r 'require \"vendor/autoload.php\"; $$app=require \"bootstrap/app.php\"; $$kernel=$$app->make(Illuminate\\Contracts\\Console\\Kernel::class); $$kernel->bootstrap(); exit(Illuminate\\Support\\Facades\\Schema::hasTable(\"migrations\") ? 0 : 1);'; do sleep 2; done;
+      php artisan schedule:work"
+    volumes:
+      - ./backend:/var/www/html
+      - ./.env:/var/www/html/.env:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    networks:
+      - ai2_net
+
   nginx:
     image: nginx:1.27-alpine
     container_name: ai2_nginx

@@ -45,4 +45,7 @@ USER dev
 
 EXPOSE 9000
 
-CMD ["php-fpm", "-F"]
+COPY --chown=dev:dev start-app.sh /usr/local/bin/start-app.sh
+RUN chmod +x /usr/local/bin/start-app.sh
+
+CMD ["/usr/local/bin/start-app.sh"]
