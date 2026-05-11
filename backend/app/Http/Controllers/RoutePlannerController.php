@@ -30,6 +30,23 @@ class RoutePlannerController extends Controller
         return response()->json($stop);
     }
 
+    public function listRoutes(): JsonResponse
+    {
+        return response()->json([
+            'routes' => $this->planner->listRoutes(),
+        ]);
+    }
+
+    public function tripDetails(int $trip_id): JsonResponse
+    {
+        $details = $this->planner->tripDetails($trip_id);
+        if (! $details) {
+            return response()->json(['message' => 'Trip not found.'], 404);
+        }
+
+        return response()->json($details);
+    }
+
     public function planRoute(Request $request): JsonResponse
     {
         $data = $request->validate([

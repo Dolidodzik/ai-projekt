@@ -81,6 +81,111 @@ class TransitPlannerService
         ];
     }
 
+    public function listRoutes(): array
+    {
+        return DB::table('gtfs_routes')
+            ->select('id', 'route_id', 'route_short_name', 'route_long_name', 'route_type')
+            ->orderBy('route_short_name')
+            ->get()
+            ->map(static function ($row): array {
+                return [
+                    'id' => (int) $row->id,
+                    'route_id' => (string) $row->route_id,
+                    'short_name' => (string) $row->route_short_name,
+                    'long_name' => $row->route_long_name !== null ? (string) $row->route_long_name : null,
+                    'route_type' => (int) $row->route_type,
+                ];
+            })
+            ->all();
+    }
+
+    public function tripDetails(int $tripId): ?array
+    {
+        $trip = DB::table('gtfs_trips as t')
+            ->join('gtfs_routes as r', 'r.id', '=', 't.route_id')
+            ->select([
+                't.id as trip_pk',
+                't.trip_id',
+                't.shape_id',
+                't.direction_id',
+                'r.id as route_pk',
+                'r.route_id',
+                'r.route_short_name',
+                'r.route_long_name',
+            ])
+            ->where('t.id', $tripId)
+            ->first();
+
+        if (! $trip) {
+            return null;
+        }
+
+        $stops = DB::table('gtfs_stop_times as st')
+            ->join('gtfs_stops as s', 's.id', '=', 'st.stop_id')
+            ->select([
+                'st.stop_sequence',
+                'st.arrival_time',
+                'st.departure_time',
+                's.id as stop_pk',
+                's.stop_id',
+                's.stop_name',
+                's.stop_lat',
+                's.stop_lon',
+            ])
+            ->where('st.trip_id', $tripId)
+            ->orderBy('st.stop_sequence')
+            ->get()
+            ->map(static function ($row): array {
+                return [
+                    'stop_sequence' => (int) $row->stop_sequence,
+                    'arrival_time' => (string) $row->arrival_time,
+                    'departure_time' => (string) $row->departure_time,
+                    'stop' => [
+                        'id' => (int) $row->stop_pk,
+                        'stop_id' => (string) $row->stop_id,
+                        'stop_name' => (string) $row->stop_name,
+                        'stop_lat' => (float) $row->stop_lat,
+                        'stop_lon' => (float) $row->stop_lon,
+                    ],
+                ];
+            })
+            ->all();
+
+        $shape = [];
+        if ($trip->shape_id !== null) {
+            $shape = DB::table('gtfs_shapes')
+                ->select('shape_pt_lat', 'shape_pt_lon', 'shape_pt_sequence')
+                ->where('shape_id', $trip->shape_id)
+                ->orderBy('shape_pt_sequence')
+                ->get()
+                ->map(static function ($row): array {
+                    return [
+                        'lat' => (float) $row->shape_pt_lat,
+                        'lon' => (float) $row->shape_pt_lon,
+                        'sequence' => (int) $row->shape_pt_sequence,
+                    ];
+                })
+                ->all();
+        }
+
+        return [
+            'trip' => [
+                'id' => (int) $trip->trip_pk,
+                'trip_id' => (string) $trip->trip_id,
+                'shape_id' => $trip->shape_id !== null ? (string) $trip->shape_id : null,
+                'direction_id' => $trip->direction_id !== null ? (int) $trip->direction_id : null,
+                'route' => [
+                    'id' => (int) $trip->route_pk,
+                    'route_id' => (string) $trip->route_id,
+                    'short_name' => (string) $trip->route_short_name,
+                    'long_name' => $trip->route_long_name !== null ? (string) $trip->route_long_name : null,
+                ],
+            ],
+            'stops' => $stops,
+            'shape' => $shape,
+        ];
+    }
+
     public function oneTransferTrip(int $fromStopId, int $toStopId): ?array
     {
         $sql = <<<'SQL'
