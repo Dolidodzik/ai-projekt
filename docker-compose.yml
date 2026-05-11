@@ -84,6 +84,10 @@ services:
     container_name: ai2_node
     restart: unless-stopped
     working_dir: /app
+    env_file:
+      - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
     volumes:
       - ./frontend:/app
     ports:

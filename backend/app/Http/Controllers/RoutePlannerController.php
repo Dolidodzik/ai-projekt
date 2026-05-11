@@ -6,6 +6,7 @@ use App\Services\OrsService;
 use App\Services\TransitPlannerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class RoutePlannerController extends Controller
 {
@@ -57,9 +58,11 @@ class RoutePlannerController extends Controller
             'to_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'to_lon' => ['nullable', 'numeric', 'between:-180,180'],
             'max_transfers' => ['nullable', 'integer', 'min:0', 'max:3'],
+            'depart_at' => ['nullable', 'date'],
         ]);
 
-        $maxTransfers = (int) ($data['max_transfers'] ?? 1);
+        $maxTransfers = (int) ($data['max_transfers'] ?? 3);
+        $departAt = isset($data['depart_at']) ? Carbon::parse($data['depart_at']) : now();
 
         $from = $this->resolveEndpoint(
             $data['from_stop_id'] ?? null,
@@ -81,19 +84,58 @@ class RoutePlannerController extends Controller
             return $to;
         }
 
-        $direct = $this->planner->directTrip($from['stop']['id'], $to['stop']['id']);
-        $transit = $direct;
+        $fromStopIds = $from['nearby_stop_ids'] ?? [$from['stop']['id']];
+        $toStopIds = $to['nearby_stop_ids'] ?? [$to['stop']['id']];
+        $accessSecondsByStop = null;
 
-        if (! $transit && $maxTransfers >= 1) {
-            $transit = $this->planner->oneTransferTrip($from['stop']['id'], $to['stop']['id']);
+        if (isset($from['coord'], $from['nearby_stops'])) {
+            $baseSeconds = $this->planner->localDepartSeconds($departAt);
+            $accessSecondsByStop = [];
+            $primaryWalkSeconds = isset($from['walk']['ors']['duration_s'])
+                ? (int) $from['walk']['ors']['duration_s']
+                : null;
+
+            foreach ($from['nearby_stops'] as $stop) {
+                $walkSeconds = $this->planner->walkSeconds(
+                    (float) $from['coord']['lat'],
+                    (float) $from['coord']['lon'],
+                    (float) $stop['stop_lat'],
+                    (float) $stop['stop_lon']
+                );
+
+                if ($primaryWalkSeconds !== null && $primaryWalkSeconds > 0 && (int) $stop['id'] === (int) $from['stop']['id']) {
+                    $walkSeconds = $primaryWalkSeconds;
+                }
+
+                $accessSecondsByStop[(int) $stop['id']] = $baseSeconds + $walkSeconds;
+            }
         }
 
-        if (! $transit) {
+        $egressDistanceByStop = null;
+        if (isset($to['nearby_stops'])) {
+            $egressDistanceByStop = [];
+            foreach ($to['nearby_stops'] as $stop) {
+                $egressDistanceByStop[(int) $stop['id']] = (int) round((float) $stop['distance_m']);
+            }
+        }
+
+        $transitOptions = $this->planner->findTransitOptions(
+            $fromStopIds,
+            $toStopIds,
+            $maxTransfers,
+            $departAt,
+            5,
+            $accessSecondsByStop,
+            $egressDistanceByStop
+        );
+
+        if ($transitOptions === []) {
             return response()->json([
                 'message' => 'No route found for selected endpoints.',
                 'from_stop' => $from['stop'],
                 'to_stop' => $to['stop'],
                 'max_transfers' => $maxTransfers,
+                'depart_at' => $departAt->toIso8601String(),
             ], 404);
         }
 
@@ -101,11 +143,13 @@ class RoutePlannerController extends Controller
             'from_stop' => $from['stop'],
             'to_stop' => $to['stop'],
             'max_transfers' => $maxTransfers,
+            'depart_at' => $departAt->toIso8601String(),
             'walking_segments' => array_values(array_filter([
                 $from['walk'] ?? null,
                 $to['walk'] ?? null,
             ])),
-            'transit' => $transit,
+            'transit_options' => $transitOptions,
+            'transit' => $transitOptions[0],
         ]);
     }
 
@@ -130,11 +174,17 @@ class RoutePlannerController extends Controller
             ], 422);
         }
 
-        $nearest = $this->planner->nearestStop((float) $lat, (float) $lon);
-        if (! $nearest) {
-            return response()->json(['message' => 'No GTFS stops found.'], 404);
+        $nearbyStops = $this->planner->nearestStops((float) $lat, (float) $lon);
+        if ($nearbyStops === []) {
+            $nearest = $this->planner->nearestStop((float) $lat, (float) $lon);
+            if (! $nearest) {
+                return response()->json(['message' => 'No GTFS stops found.'], 404);
+            }
+
+            $nearbyStops = [$nearest];
         }
 
+        $nearest = $nearbyStops[0];
         $walk = $this->ors->walkingRoute(
             (float) $lat,
             (float) $lon,
@@ -144,6 +194,9 @@ class RoutePlannerController extends Controller
 
         return [
             'stop' => $nearest,
+            'nearby_stops' => $nearbyStops,
+            'nearby_stop_ids' => array_map(static fn (array $stop): int => (int) $stop['id'], $nearbyStops),
+            'coord' => ['lat' => (float) $lat, 'lon' => (float) $lon],
             'walk' => [
                 'type' => "{$prefix}_location_to_stop",
                 'from' => ['lat' => (float) $lat, 'lon' => (float) $lon],
