@@ -1,5 +1,5 @@
 import type { LatLngExpression } from 'leaflet'
-import type { ShapePoint } from '../../features/route-planner/types'
+import type { ShapePoint, TripDetails } from '../../features/route-planner/types'
 
 export function geometryToLatLngs(geometry: GeoJSON.Geometry | null): LatLngExpression[] {
   if (!geometry) {
@@ -70,4 +70,24 @@ export function clipShapeBetweenStops(
   }
 
   return ordered.slice(fromIndex, toIndex + 1).map((point) => [point.lat, point.lon] as LatLngExpression)
+}
+
+export function polylineFromStopsBetween(
+  detail: TripDetails,
+  fromStopPk: number,
+  toStopPk: number,
+): LatLngExpression[] {
+  const stops = detail.stops
+  const fromIdx = stops.findIndex((row) => row.stop.id === fromStopPk)
+  const toIdx = stops.findIndex((row) => row.stop.id === toStopPk)
+  if (fromIdx === -1 || toIdx === -1 || fromIdx > toIdx) {
+    return []
+  }
+  const pts = stops
+    .slice(fromIdx, toIdx + 1)
+    .map((row) => [row.stop.stop_lat, row.stop.stop_lon] as LatLngExpression)
+  if (pts.length === 1) {
+    return [pts[0], pts[0]]
+  }
+  return pts
 }

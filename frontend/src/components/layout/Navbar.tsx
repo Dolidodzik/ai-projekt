@@ -2,9 +2,8 @@ import { NavLink } from 'react-router-dom'
 
 const links = [
   { to: '/', label: 'Planner' },
-  { to: '/rozklad', label: 'Timetable' },
-  { to: '/odjazdy', label: 'Departures' },
-  { to: '/logowanie', label: 'Sign in' },
+  { to: '/schedule', label: 'Timetable' },
+  { to: '/sign-in', label: 'Sign in' },
 ]
 
 export function Navbar() {

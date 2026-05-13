@@ -55,7 +55,7 @@ export function PlannerPage() {
         depart_at: new Date(`${departDate}T${departTime}`).toISOString(),
       })
       savePlanResult(result)
-      navigate('/wyniki', { state: { planResult: result } })
+      navigate('/results', { state: { planResult: result } })
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Route search failed.')
     } finally {

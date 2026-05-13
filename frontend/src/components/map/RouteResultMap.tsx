@@ -1,6 +1,6 @@
 import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet'
 import type { PlanRouteResult, TransitLeg, TransitResult, TripDetails } from '../../features/route-planner/types'
-import { clipShapeBetweenStops, geometryToLatLngs } from './geo'
+import { clipShapeBetweenStops, geometryToLatLngs, polylineFromStopsBetween } from './geo'
 
 interface RouteResultMapProps {
   planResult: PlanRouteResult
@@ -42,7 +42,17 @@ export function RouteResultMap({ planResult, tripDetails, transit }: RouteResult
       return []
     }
 
-    return clipShapeBetweenStops(detail.shape, fromStop.stop_lat, fromStop.stop_lon, toStop.stop_lat, toStop.stop_lon)
+    const clipped = clipShapeBetweenStops(
+      detail.shape,
+      fromStop.stop_lat,
+      fromStop.stop_lon,
+      toStop.stop_lat,
+      toStop.stop_lon,
+    )
+    if (clipped.length >= 2) {
+      return clipped
+    }
+    return polylineFromStopsBetween(detail, leg.from_stop_id, leg.to_stop_id)
   })
   const center: [number, number] = [planResult.from_stop.stop_lat, planResult.from_stop.stop_lon]
 

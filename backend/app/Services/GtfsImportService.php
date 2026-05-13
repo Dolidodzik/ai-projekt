@@ -191,9 +191,6 @@ class GtfsImportService
         return null;
     }
 
-    /**
-     * @return array{0: array<int, string>, 1: array<int, string>}|null
-     */
     protected function readCsvAssoc(string $path): ?array
     {
         $handle = fopen($path, 'r');
@@ -230,9 +227,6 @@ class GtfsImportService
         DB::table('gtfs_stops')->delete();
     }
 
-    /**
-     * @return array<string, int>
-     */
     protected function importStops(string $dataDir): array
     {
         $path = $this->findFile($dataDir, 'stops.txt');
@@ -286,9 +280,6 @@ class GtfsImportService
         return $map;
     }
 
-    /**
-     * @return array<string, int>
-     */
     protected function importRoutes(string $dataDir): array
     {
         $path = $this->findFile($dataDir, 'routes.txt');
@@ -443,9 +434,6 @@ class GtfsImportService
         }
     }
 
-    /**
-     * @return list<string>
-     */
     protected function scanCalendarDatesServiceIds(string $path): array
     {
         $handle = fopen($path, 'r');
@@ -588,10 +576,6 @@ class GtfsImportService
         }
     }
 
-    /**
-     * @param  array<string, int>  $routeMap
-     * @return array<string, int>
-     */
     protected function importTrips(string $dataDir, array $routeMap): array
     {
         $path = $this->findFile($dataDir, 'trips.txt');
@@ -664,9 +648,6 @@ class GtfsImportService
         return $map;
     }
 
-    /**
-     * @return list<string>
-     */
     protected function scanTripServiceIds(string $path): array
     {
         $handle = fopen($path, 'r');
@@ -697,9 +678,6 @@ class GtfsImportService
         return array_keys($set);
     }
 
-    /**
-     * @param  list<string>  $serviceIds
-     */
     protected function ensureCalendarsForServices(array $serviceIds): void
     {
         if ($serviceIds === []) {
@@ -739,10 +717,6 @@ class GtfsImportService
         }
     }
 
-    /**
-     * @param  array<string, int>  $tripMap
-     * @param  array<string, int>  $stopMap
-     */
     protected function importStopTimes(string $dataDir, array $tripMap, array $stopMap): void
     {
         $path = $this->findFile($dataDir, 'stop_times.txt');
