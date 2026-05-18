@@ -3,7 +3,8 @@ import { AppLayout } from '../components/layout/AppLayout'
 import { PlannerPage } from '../features/route-planner/pages/PlannerPage'
 import { ResultsPage } from '../features/route-planner/pages/ResultsPage'
 import { SchedulePage } from '../features/schedules/SchedulePage'
-import { PlaceholderPage } from '../pages/PlaceholderPage'
+import { AccountSettingsPage } from '../pages/AccountSettingsPage'
+import { SignInPage } from '../pages/SignInPage'
 
 export const router = createBrowserRouter([
   {
@@ -15,12 +16,13 @@ export const router = createBrowserRouter([
       { path: '/schedule', element: <SchedulePage /> },
       { path: '/rozklad', element: <Navigate to="/schedule" replace /> },
       { path: '/odjazdy', element: <Navigate to="/schedule" replace /> },
-      { path: '/sign-in', element: <PlaceholderPage title="Sign in" description="Authentication will be added here." /> },
+      { path: '/sign-in', element: <SignInPage /> },
       { path: '/logowanie', element: <Navigate to="/sign-in" replace /> },
-      { path: '/register', element: <PlaceholderPage title="Register" description="Registration will be added here." /> },
+      { path: '/register', element: <SignInPage /> },
       { path: '/rejestracja', element: <Navigate to="/register" replace /> },
-      { path: '/account', element: <PlaceholderPage title="Account" description="Account area will be added here." /> },
-      { path: '/konto', element: <Navigate to="/account" replace /> },
+      { path: '/account', element: <Navigate to="/account/profil" replace /> },
+      { path: '/account/:section', element: <AccountSettingsPage /> },
+      { path: '/konto', element: <Navigate to="/account/profil" replace /> },
     ],
   },
 ])

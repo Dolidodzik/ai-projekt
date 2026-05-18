@@ -40,18 +40,20 @@ RUN { \
 
 ARG UID=1000
 ARG GID=1000
-RUN addgroup -g ${GID} dev \
-    && adduser -D -u ${UID} -G dev -s /bin/bash dev \
+RUN if ! getent group ${GID} >/dev/null; then addgroup -g ${GID} dev; fi \
+    && if ! getent passwd ${UID} >/dev/null; then adduser -D -u ${UID} -G "$(getent group ${GID} | cut -d: -f1)" -s /bin/bash dev; fi \
     && mkdir -p /var/www/html \
-    && chown -R dev:dev /var/www/html
+    && chown -R ${UID}:${GID} /var/www/html
 
 WORKDIR /var/www/html
 
-USER dev
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
+
+USER ${UID}:${GID}
 
 EXPOSE 9000
 
-COPY --chown=dev:dev start-app.sh /usr/local/bin/start-app.sh
-RUN chmod +x /usr/local/bin/start-app.sh
-
-CMD ["/usr/local/bin/start-app.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["php-fpm", "-F"]

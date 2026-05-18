@@ -2,33 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\StoreUserRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(User::query()->orderBy('id')->get());
+        $users = User::query()
+            ->orderBy('id')
+            ->get(['id', 'name', 'email', 'is_admin', 'created_at']);
+
+        return response()->json(['data' => $users]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreUserRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password_hash' => ['required', 'string', 'min:6'],
-            'is_admin' => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password_hash' => $data['password_hash'],
-            'is_admin' => $data['is_admin'] ?? false,
+            'password_hash' => $data['password'],
         ]);
 
-        return response()->json($user, 201);
+        if (! empty($data['is_admin'])) {
+            $user->forceFill(['is_admin' => true])->save();
+        }
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_admin' => (bool) $user->is_admin,
+            'created_at' => $user->created_at,
+        ], 201);
     }
 }

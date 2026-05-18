@@ -3,10 +3,19 @@ import { Link, Navigate, useLocation } from 'react-router-dom'
 import { RouteResultMap } from '../../../components/map/RouteResultMap'
 import { Alert } from '../../../components/ui/Alert'
 import { Spinner } from '../../../components/ui/Spinner'
+import { useAuth } from '../../../contexts/AuthContext'
+import { saveRideToHistory } from '../../ride-history/api'
 import { fetchTripDetails } from '../api'
 import { loadPlanResult } from '../storage'
 import type { PlanRouteResult, TransitResult, TripDetails } from '../types'
-import { formatLocaleDateTime24, formatWalkingSummary, getTripPks, transitSummary } from '../utils'
+import {
+  formatDurationMinutes,
+  formatLocaleDateTime24,
+  formatWalkingSummary,
+  getTripPks,
+  transitDurationMinutes,
+  transitSummary,
+} from '../utils'
 
 interface ResultsLocationState {
   planResult?: PlanRouteResult
@@ -14,11 +23,13 @@ interface ResultsLocationState {
 
 export function ResultsPage() {
   const location = useLocation()
+  const { token, isAuthenticated } = useAuth()
   const state = location.state as ResultsLocationState | null
   const [planResult] = useState<PlanRouteResult | null>(() => state?.planResult ?? loadPlanResult())
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [tripDetails, setTripDetails] = useState<TripDetails[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [historyMessage, setHistoryMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(Boolean(planResult))
 
   const transitOptions = useMemo<TransitResult[]>(
@@ -66,11 +77,33 @@ export function ResultsPage() {
     }
   }, [selectedTransit])
 
+  async function handleSelectOption(index: number) {
+    setSelectedIndex(index)
+    setHistoryMessage(null)
+
+    if (!isAuthenticated || !token || !planResult) {
+      return
+    }
+
+    const option = transitOptions[index]
+    if (!option) {
+      return
+    }
+
+    try {
+      await saveRideToHistory(token, planResult, option)
+      setHistoryMessage('Trasa zapisana w historii przejazdow.')
+    } catch {
+      setHistoryMessage(null)
+    }
+  }
+
   if (!planResult || !selectedTransit || !mapResult) {
     return <Navigate to="/" replace />
   }
 
   const walkingSummary = formatWalkingSummary(planResult.walking_segments)
+  const travelDuration = formatDurationMinutes(transitDurationMinutes(selectedTransit))
 
   return (
     <section className="space-y-6">
@@ -98,12 +131,21 @@ export function ResultsPage() {
         <aside className="space-y-4">
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-lg font-semibold">Next departures</h2>
+            {historyMessage ? <p className="mt-2 text-xs text-emerald-700">{historyMessage}</p> : null}
+            {!isAuthenticated ? (
+              <p className="mt-2 text-xs text-slate-500">
+                <Link to="/sign-in" className="font-medium text-[#1754d8] hover:underline">
+                  Zaloguj sie
+                </Link>
+                , aby zapisywac trasy w historii.
+              </p>
+            ) : null}
             <div className="mt-4 space-y-2">
               {transitOptions.map((option, index) => (
                 <button
                   key={`${option.type}-${index}-${transitSummary(option, planResult.depart_at)}`}
                   type="button"
-                  onClick={() => setSelectedIndex(index)}
+                  onClick={() => void handleSelectOption(index)}
                   className={`w-full rounded-xl border px-4 py-3 text-left text-sm ${
                     index === selectedIndex ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
@@ -133,6 +175,10 @@ export function ResultsPage() {
                 <dt className="text-slate-500">Max transfers</dt>
                 <dd className="font-medium">{planResult.max_transfers}</dd>
               </div>
+              <div>
+                <dt className="text-slate-500">Czas przejazdu</dt>
+                <dd className="font-medium">{travelDuration}</dd>
+              </div>
               {walkingSummary ? (
                 <div>
                   <dt className="text-slate-500">Walking</dt>
@@ -151,9 +197,13 @@ export function ResultsPage() {
                 <p className="mt-3">
                   {selectedTransit.from_departure_time} -&gt; {selectedTransit.to_arrival_time}
                 </p>
+                <p className="mt-2 font-medium text-emerald-700">Czas przejazdu: {travelDuration}</p>
               </div>
             ) : (
               <div className="mt-4 space-y-3">
+                <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                  Czas przejazdu: {travelDuration}
+                </p>
                 {selectedTransit.legs.map((leg, index) => (
                   <div key={`${leg.trip_pk}-${index}`} className="rounded-xl bg-slate-50 p-4 text-sm">
                     <p className="font-medium">

@@ -127,3 +127,44 @@ export function getTripPks(transit: TransitResult): number[] {
 
   return transit.legs.map((leg) => leg.trip_pk)
 }
+
+function gtfsTimeSpanMinutes(fromTime: string, toTime: string): number {
+  let fromSeconds = gtfsTimeToSeconds(fromTime)
+  let toSeconds = gtfsTimeToSeconds(toTime)
+
+  if (toSeconds < fromSeconds) {
+    toSeconds += 24 * 3600
+  }
+
+  return Math.max(1, Math.round((toSeconds - fromSeconds) / 60))
+}
+
+export function transitDurationMinutes(transit: TransitResult): number {
+  if (transit.type === 'direct') {
+    return gtfsTimeSpanMinutes(transit.from_departure_time, transit.to_arrival_time)
+  }
+
+  const firstLeg = transit.legs[0]
+  const lastLeg = transit.legs[transit.legs.length - 1]
+
+  return gtfsTimeSpanMinutes(firstLeg.from_departure_time, lastLeg.to_arrival_time)
+}
+
+export function formatDurationMinutes(minutes: number | null | undefined): string {
+  if (minutes === null || minutes === undefined || minutes < 1) {
+    return '—'
+  }
+
+  if (minutes < 60) {
+    return `${minutes} min`
+  }
+
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+
+  if (rest === 0) {
+    return `${hours} h`
+  }
+
+  return `${hours} h ${rest} min`
+}

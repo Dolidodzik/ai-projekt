@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
-Route::redirect('/', '/admin_panel/');
+Route::redirect('/', '/login');
 
 Route::get('/login', function () {
     if (Auth::check() && Auth::user()->is_admin) {
@@ -27,15 +27,15 @@ Route::post('/login', function (Request $request) {
 
     $user = User::where('email', $credentials['email'])->first();
 
-    if (! $user || ! Hash::check($credentials['password'], $user->password_hash)) {
+    if (! $user || ! Hash::check($credentials['password'], $user->getAuthPassword())) {
         return back()
-            ->withErrors(['password' => 'Bad password.'])
+            ->withErrors(['password' => 'Nieprawidlowe haslo.'])
             ->onlyInput('email');
     }
 
     if (! $user->is_admin) {
         return back()
-            ->withErrors(['email' => 'You do not have admin privileges.'])
+            ->withErrors(['email' => 'To konto nie ma uprawnien administratora. Uzyj admin@example.com.'])
             ->onlyInput('email');
     }
 
@@ -51,7 +51,7 @@ Route::post('/logout', function (Request $request) {
     $request->session()->regenerateToken();
 
     return redirect('/login');
-})->middleware('admin')->name('logout');
+})->middleware('auth')->name('logout');
 
 Route::prefix('admin_panel')->middleware('admin')->group(function () {
     Route::view('/', 'admin.stats')->name('admin.stats');
