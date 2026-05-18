@@ -1,4 +1,7 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
+import { BuyTicketsPanel } from './components/tickets/BuyTicketsPanel'
+import { MyTicketsPanel } from './components/tickets/MyTicketsPanel'
 
 type User = {
   id: number
@@ -14,12 +17,15 @@ type AuthResponse = {
 }
 
 type AuthMode = 'login' | 'register'
+type AppView = 'profile' | 'my-tickets' | 'buy-tickets'
 
 const STORAGE_KEY = 'ai2_auth_token'
 
 function App() {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api'
   const [mode, setMode] = useState<AuthMode>('login')
+  const [view, setView] = useState<AppView>('profile')
+  const [ticketsRefreshKey, setTicketsRefreshKey] = useState(0)
   const [token, setToken] = useState<string>(localStorage.getItem(STORAGE_KEY) ?? '')
   const [user, setUser] = useState<User | null>(null)
   const [message, setMessage] = useState('')
@@ -211,7 +217,28 @@ function App() {
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <h1 className="text-xl font-semibold">AI2 Konto Uzytkownika</h1>
           {user && (
-            <button
+            <div className="flex items-center gap-3">
+              <nav className="hidden gap-1 sm:inline-flex rounded-lg bg-slate-100 p-1">
+                {(
+                  [
+                    ['profile', 'Profil'],
+                    ['my-tickets', 'Moje bilety'],
+                    ['buy-tickets', 'Kupno biletow'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setView(key)}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                      view === key ? 'bg-[#1754d8] text-white' : 'text-slate-700'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+              <button
               type="button"
               onClick={handleLogout}
               disabled={loading}
@@ -219,6 +246,7 @@ function App() {
             >
               Wyloguj
             </button>
+            </div>
           )}
         </div>
       </header>
@@ -301,6 +329,27 @@ function App() {
               </form>
             )}
           </section>
+        ) : view === 'my-tickets' ? (
+          <MyTicketsPanel
+            apiRequest={apiRequest}
+            refreshKey={ticketsRefreshKey}
+            onMessage={setMessage}
+            onError={setError}
+            loading={loading}
+            setLoading={setLoading}
+          />
+        ) : view === 'buy-tickets' ? (
+          <BuyTicketsPanel
+            apiRequest={apiRequest}
+            onPurchased={() => {
+              setTicketsRefreshKey((prev) => prev + 1)
+              setView('my-tickets')
+            }}
+            onMessage={setMessage}
+            onError={setError}
+            loading={loading}
+            setLoading={setLoading}
+          />
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -346,6 +395,29 @@ function App() {
               </form>
             </section>
           </div>
+        )}
+
+        {user && (
+          <nav className="mt-6 flex gap-1 sm:hidden rounded-lg bg-slate-100 p-1">
+            {(
+              [
+                ['profile', 'Profil'],
+                ['my-tickets', 'Moje bilety'],
+                ['buy-tickets', 'Kupno biletow'],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setView(key)}
+                className={`flex-1 rounded-md px-2 py-2 text-xs font-medium ${
+                  view === key ? 'bg-[#1754d8] text-white' : 'text-slate-700'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
         )}
       </main>
     </div>

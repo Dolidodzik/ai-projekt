@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RideHistoryController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,4 +19,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
+
+    Route::get('/ticket-types', [TicketController::class, 'types']);
+    Route::get('/tickets', [TicketController::class, 'index']);
+    Route::post('/tickets/purchase', [TicketController::class, 'purchase']);
+    Route::post('/tickets/{id}/activate', [TicketController::class, 'activate']);
+
+    Route::get('/ride-history', [RideHistoryController::class, 'index']);
+    Route::post('/ride-history/add', [RideHistoryController::class, 'store']);
 });
