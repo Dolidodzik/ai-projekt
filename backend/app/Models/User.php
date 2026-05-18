@@ -27,6 +27,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password_hash',
+    ];
+
+    protected $guarded = [
+        'id',
         'is_admin',
     ];
 
@@ -54,5 +58,10 @@ class User extends Authenticatable
     public function rideHistory(): HasMany
     {
         return $this->hasMany(RideHistory::class);
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class);
     }
 }

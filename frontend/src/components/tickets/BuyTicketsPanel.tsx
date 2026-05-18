@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { formatPrice } from './types'
 import type { ApiRequestFn, TicketType } from './types'
@@ -28,31 +28,50 @@ export function BuyTicketsPanel({
   loading,
   setLoading,
 }: BuyTicketsPanelProps) {
+  const apiRequestRef = useRef(apiRequest)
+  apiRequestRef.current = apiRequest
+
   const [types, setTypes] = useState<TicketType[]>([])
+  const [typesLoading, setTypesLoading] = useState(true)
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null)
   const [validFrom, setValidFrom] = useState(todayIsoDate())
   const [paymentConfirmed, setPaymentConfirmed] = useState(false)
 
   const selectedType = types.find((type) => type.id === selectedTypeId) ?? null
 
-  const loadTypes = useCallback(async () => {
-    try {
-      setLoading(true)
-      const response = await apiRequest<{ data: TicketType[] }>('/ticket-types')
-      setTypes(response.data)
-      if (response.data.length > 0) {
-        setSelectedTypeId(response.data[0].id)
-      }
-    } catch (err) {
-      onError(err instanceof Error ? err.message : 'Nie udalo sie pobrac typow biletow')
-    } finally {
-      setLoading(false)
-    }
-  }, [apiRequest, onError, setLoading])
-
   useEffect(() => {
+    let cancelled = false
+
+    async function loadTypes() {
+      try {
+        setTypesLoading(true)
+        const response = await apiRequestRef.current<{ data: TicketType[] }>('/ticket-types')
+        if (cancelled) return
+
+        setTypes(response.data)
+        setSelectedTypeId((current) => {
+          if (current !== null && response.data.some((type) => type.id === current)) {
+            return current
+          }
+          return response.data[0]?.id ?? null
+        })
+      } catch (err) {
+        if (!cancelled) {
+          onError(err instanceof Error ? err.message : 'Nie udalo sie pobrac typow biletow')
+        }
+      } finally {
+        if (!cancelled) {
+          setTypesLoading(false)
+        }
+      }
+    }
+
     void loadTypes()
-  }, [loadTypes])
+
+    return () => {
+      cancelled = true
+    }
+  }, [onError])
 
   async function handlePurchase(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -88,11 +107,15 @@ export function BuyTicketsPanel({
     }
   }
 
+  const isBusy = loading || typesLoading
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-lg font-semibold">Kupno biletow</h2>
 
-      {types.length === 0 ? (
+      {typesLoading ? (
+        <p className="text-sm text-slate-500">Ladowanie typow biletow...</p>
+      ) : types.length === 0 ? (
         <p className="text-sm text-slate-500">Brak dostepnych typow biletow.</p>
       ) : (
         <form onSubmit={(event) => void handlePurchase(event)} className="space-y-4">
@@ -101,7 +124,8 @@ export function BuyTicketsPanel({
             <select
               value={selectedTypeId ?? ''}
               onChange={(event) => setSelectedTypeId(Number(event.target.value))}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20"
+              disabled={isBusy}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20 disabled:opacity-60"
             >
               {types.map((type) => (
                 <option key={type.id} value={type.id}>
@@ -135,7 +159,8 @@ export function BuyTicketsPanel({
                 min={todayIsoDate()}
                 onChange={(event) => setValidFrom(event.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20"
+                disabled={isBusy}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20 disabled:opacity-60"
               />
             </label>
           )}
@@ -145,14 +170,15 @@ export function BuyTicketsPanel({
               type="checkbox"
               checked={paymentConfirmed}
               onChange={(event) => setPaymentConfirmed(event.target.checked)}
-              className="rounded border-slate-300 text-[#1754d8] focus:ring-[#1754d8]/20"
+              disabled={isBusy}
+              className="rounded border-slate-300 text-[#1754d8] focus:ring-[#1754d8]/20 disabled:opacity-60"
             />
             Potwierdzam symulowana platnosc ({selectedType ? formatPrice(selectedType.price) : '—'})
           </label>
 
           <button
             type="submit"
-            disabled={loading || !selectedType}
+            disabled={isBusy || !selectedType}
             className="rounded-lg bg-[#1754d8] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1549bc] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Kup bilet

@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RideHistory\IndexRideHistoryRequest;
+use App\Http\Requests\RideHistory\StoreRideHistoryRequest;
 use App\Models\RideHistory;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class RideHistoryController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(IndexRideHistoryRequest $request): JsonResponse
     {
-        $perPage = min((int) $request->input('per_page', 15), 50);
-
         $rides = RideHistory::query()
-            ->with(['trip', 'fromStop', 'toStop'])
+            ->with(['trip.route', 'fromStop', 'toStop'])
             ->where('user_id', $request->user()->id)
             ->orderByDesc('created_at')
-            ->paginate($perPage);
+            ->paginate($request->perPage());
 
         return response()->json([
             'data' => $rides->getCollection()->map(fn (RideHistory $ride) => $this->ridePayload($ride)),
@@ -29,13 +28,9 @@ class RideHistoryController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreRideHistoryRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'trip_id' => ['required', 'integer', 'exists:gtfs_trips,id'],
-            'from_stop_id' => ['required', 'integer', 'exists:gtfs_stops,id'],
-            'to_stop_id' => ['required', 'integer', 'exists:gtfs_stops,id', 'different:from_stop_id'],
-        ]);
+        $data = $request->validated();
 
         $ride = RideHistory::create([
             'user_id' => $request->user()->id,
@@ -45,7 +40,7 @@ class RideHistoryController extends Controller
             'created_at' => now(),
         ]);
 
-        $ride->load(['trip', 'fromStop', 'toStop']);
+        $ride->load(['trip.route', 'fromStop', 'toStop']);
 
         return response()->json([
             'message' => 'Przejazd dodany do historii.',
@@ -59,6 +54,8 @@ class RideHistoryController extends Controller
             'id' => $ride->id,
             'trip_id' => $ride->trip_id,
             'trip_code' => $ride->trip?->trip_id,
+            'route_short_name' => $ride->trip?->route?->route_short_name,
+            'route_long_name' => $ride->trip?->route?->route_long_name,
             'from_stop_id' => $ride->from_stop_id,
             'from_stop_name' => $ride->fromStop?->stop_name,
             'to_stop_id' => $ride->to_stop_id,

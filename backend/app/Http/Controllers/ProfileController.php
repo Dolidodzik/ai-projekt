@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Profile\UpdatePasswordRequest;
+use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,34 +14,26 @@ class ProfileController extends Controller
 {
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user());
+        return response()->json($this->userPayload($request->user()));
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(UpdateProfileRequest $request): JsonResponse
     {
         $user = $request->user();
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
-        ]);
+        $data = $request->validated();
 
         $user->fill($data)->save();
 
         return response()->json([
             'message' => 'Dane profilu zapisane.',
-            'user' => $user,
+            'user' => $this->userPayload($user),
         ]);
     }
 
-    public function updatePassword(Request $request): JsonResponse
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
     {
         $user = $request->user();
-
-        $data = $request->validate([
-            'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+        $data = $request->validated();
 
         if (! Hash::check($data['current_password'], $user->password_hash)) {
             throw ValidationException::withMessages([
@@ -49,7 +44,6 @@ class ProfileController extends Controller
         $user->password_hash = $data['password'];
         $user->save();
 
-        // Invalidates all existing sessions on password change.
         $user->tokens()->delete();
 
         $token = $user->createToken('spa')->plainTextToken;
@@ -58,5 +52,16 @@ class ProfileController extends Controller
             'message' => 'Haslo zostalo zmienione.',
             'token' => $token,
         ]);
+    }
+
+    private function userPayload(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_admin' => (bool) $user->is_admin,
+            'created_at' => $user->created_at,
+        ];
     }
 }

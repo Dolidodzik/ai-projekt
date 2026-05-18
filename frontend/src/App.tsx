@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { ReportsPanel } from './components/reports/ReportsPanel'
+import { RideHistoryPanel } from './components/ride-history/RideHistoryPanel'
 import { BuyTicketsPanel } from './components/tickets/BuyTicketsPanel'
 import { MyTicketsPanel } from './components/tickets/MyTicketsPanel'
 
@@ -17,9 +19,17 @@ type AuthResponse = {
 }
 
 type AuthMode = 'login' | 'register'
-type AppView = 'profile' | 'my-tickets' | 'buy-tickets'
+type AppView = 'profile' | 'my-tickets' | 'buy-tickets' | 'ride-history' | 'reports'
 
 const STORAGE_KEY = 'ai2_auth_token'
+
+const NAV_ITEMS: { key: AppView; label: string; shortLabel: string }[] = [
+  { key: 'profile', label: 'Profil', shortLabel: 'Profil' },
+  { key: 'my-tickets', label: 'Moje bilety', shortLabel: 'Bilety' },
+  { key: 'buy-tickets', label: 'Kupno biletow', shortLabel: 'Kupno' },
+  { key: 'ride-history', label: 'Historia przejazdow', shortLabel: 'Historia' },
+  { key: 'reports', label: 'Zgloszenia', shortLabel: 'Zgloszenia' },
+]
 
 function App() {
   const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api'
@@ -51,7 +61,7 @@ function App() {
     void fetchMe(token)
   }, [token])
 
-  async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const apiRequest = useCallback(async <T,>(path: string, options: RequestInit = {}): Promise<T> => {
     const headers = new Headers(options.headers ?? {})
     headers.set('Accept', 'application/json')
     if (!headers.has('Content-Type') && options.body) {
@@ -76,7 +86,35 @@ function App() {
     }
 
     return payload as T
-  }
+  }, [apiUrl, token])
+
+  const apiFormRequest = useCallback(
+    async <T,>(path: string, formData: FormData): Promise<T> => {
+      const headers = new Headers()
+      headers.set('Accept', 'application/json')
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`)
+      }
+
+      const response = await fetch(`${apiUrl}${path}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const validationErrors = payload?.errors
+          ? Object.values(payload.errors as Record<string, string[]>).flat()
+          : []
+        const apiError = validationErrors[0] ?? payload?.message ?? `HTTP ${response.status}`
+        throw new Error(String(apiError))
+      }
+
+      return payload as T
+    },
+    [apiUrl, token],
+  )
 
   async function fetchMe(nextToken: string) {
     try {
@@ -214,23 +252,17 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-          <h1 className="text-xl font-semibold">AI2 Konto Uzytkownika</h1>
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
+          <h1 className="shrink-0 text-xl font-semibold">AI2 Konto Uzytkownika</h1>
           {user && (
             <div className="flex items-center gap-3">
-              <nav className="hidden gap-1 sm:inline-flex rounded-lg bg-slate-100 p-1">
-                {(
-                  [
-                    ['profile', 'Profil'],
-                    ['my-tickets', 'Moje bilety'],
-                    ['buy-tickets', 'Kupno biletow'],
-                  ] as const
-                ).map(([key, label]) => (
+              <nav className="hidden flex-wrap gap-1 lg:inline-flex rounded-lg bg-slate-100 p-1">
+                {NAV_ITEMS.map(({ key, label }) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => setView(key)}
-                    className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                    className={`rounded-md px-2.5 py-1.5 text-xs font-medium lg:px-3 lg:text-sm ${
                       view === key ? 'bg-[#1754d8] text-white' : 'text-slate-700'
                     }`}
                   >
@@ -239,19 +271,21 @@ function App() {
                 ))}
               </nav>
               <button
-              type="button"
-              onClick={handleLogout}
-              disabled={loading}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
-            >
-              Wyloguj
-            </button>
+                type="button"
+                onClick={handleLogout}
+                disabled={loading}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
+              >
+                Wyloguj
+              </button>
             </div>
           )}
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10">
+      <main
+        className={`mx-auto px-6 py-10 ${view === 'ride-history' || view === 'reports' ? 'max-w-5xl' : 'max-w-4xl'}`}
+      >
         <div className="mb-6 rounded-xl border border-[#1754d8]/20 bg-[#1754d8]/5 px-4 py-3 text-sm text-[#1754d8]">
           API: <span className="font-mono">{apiUrl}</span>
         </div>
@@ -318,12 +352,14 @@ function App() {
                   type="password"
                   value={registerForm.password}
                   onChange={(value) => setRegisterForm((prev) => ({ ...prev, password: value }))}
+                  minLength={8}
                 />
                 <Input
                   label="Powtorz haslo"
                   type="password"
                   value={registerForm.password_confirmation}
                   onChange={(value) => setRegisterForm((prev) => ({ ...prev, password_confirmation: value }))}
+                  minLength={8}
                 />
                 <PrimaryButton disabled={loading}>Utworz konto</PrimaryButton>
               </form>
@@ -349,6 +385,15 @@ function App() {
             onError={setError}
             loading={loading}
             setLoading={setLoading}
+          />
+        ) : view === 'ride-history' ? (
+          <RideHistoryPanel apiRequest={apiRequest} onError={setError} />
+        ) : view === 'reports' ? (
+          <ReportsPanel
+            apiRequest={apiRequest}
+            apiFormRequest={apiFormRequest}
+            onMessage={setMessage}
+            onError={setError}
           />
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
@@ -398,23 +443,17 @@ function App() {
         )}
 
         {user && (
-          <nav className="mt-6 flex gap-1 sm:hidden rounded-lg bg-slate-100 p-1">
-            {(
-              [
-                ['profile', 'Profil'],
-                ['my-tickets', 'Moje bilety'],
-                ['buy-tickets', 'Kupno biletow'],
-              ] as const
-            ).map(([key, label]) => (
+          <nav className="mt-6 grid grid-cols-3 gap-1 sm:hidden rounded-lg bg-slate-100 p-1">
+            {NAV_ITEMS.map(({ key, shortLabel }) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setView(key)}
-                className={`flex-1 rounded-md px-2 py-2 text-xs font-medium ${
+                className={`rounded-md px-2 py-2 text-xs font-medium ${
                   view === key ? 'bg-[#1754d8] text-white' : 'text-slate-700'
                 }`}
               >
-                {label}
+                {shortLabel}
               </button>
             ))}
           </nav>
@@ -429,9 +468,11 @@ type InputProps = {
   value: string
   onChange: (nextValue: string) => void
   type?: 'text' | 'email' | 'password'
+  minLength?: number
+  maxLength?: number
 }
 
-function Input({ label, value, onChange, type = 'text' }: InputProps) {
+function Input({ label, value, onChange, type = 'text', minLength, maxLength }: InputProps) {
   return (
     <label className="block">
       <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
@@ -440,6 +481,8 @@ function Input({ label, value, onChange, type = 'text' }: InputProps) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         required
+        minLength={minLength}
+        maxLength={maxLength}
         className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20"
       />
     </label>

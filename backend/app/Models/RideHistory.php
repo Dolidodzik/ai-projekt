@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RideHistory extends Model
 {
+    protected $table = 'ride_history';
+
     public $timestamps = false;
 
     /**

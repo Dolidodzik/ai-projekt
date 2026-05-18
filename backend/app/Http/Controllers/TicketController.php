@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Ticket\PurchaseTicketRequest;
 use App\Models\TicketType;
 use App\Models\UserTicket;
 use Illuminate\Http\JsonResponse;
@@ -33,22 +34,12 @@ class TicketController extends Controller
         return response()->json(['data' => $tickets]);
     }
 
-    public function purchase(Request $request): JsonResponse
+    public function purchase(PurchaseTicketRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'ticket_type_id' => ['required', 'integer', 'exists:ticket_types,id'],
-            'valid_from' => ['nullable', 'date', 'after_or_equal:today'],
-        ]);
-
+        $data = $request->validated();
         $ticketType = TicketType::query()->findOrFail($data['ticket_type_id']);
 
         if ($ticketType->is_long_term) {
-            if (empty($data['valid_from'])) {
-                throw ValidationException::withMessages([
-                    'valid_from' => ['Dla biletow dlugoterminowych wymagana jest data rozpoczecia waznosci.'],
-                ]);
-            }
-
             $validFrom = Carbon::parse($data['valid_from'])->startOfDay();
             $validUntil = $validFrom->copy()->addMinutes($ticketType->validity_minutes);
 
@@ -61,12 +52,6 @@ class TicketController extends Controller
                 'is_active' => true,
             ]);
         } else {
-            if (! empty($data['valid_from'])) {
-                throw ValidationException::withMessages([
-                    'valid_from' => ['Bilet 60-minutowy nie wymaga daty rozpoczecia — aktywuj go po zakupie.'],
-                ]);
-            }
-
             $ticket = UserTicket::create([
                 'user_id' => $request->user()->id,
                 'ticket_type_id' => $ticketType->id,
@@ -85,39 +70,46 @@ class TicketController extends Controller
         ], 201);
     }
 
-    public function activate(Request $request, int $id): JsonResponse
+    public function activate(Request $request, int $ticket): JsonResponse
     {
-        $ticket = UserTicket::query()
+        if ($ticket < 1) {
+            throw ValidationException::withMessages([
+                'ticket' => ['Nieprawidlowy identyfikator biletu.'],
+            ]);
+        }
+
+        $userTicket = UserTicket::query()
             ->with('ticketType')
             ->where('user_id', $request->user()->id)
-            ->findOrFail($id);
+            ->whereKey($ticket)
+            ->firstOrFail();
 
-        if ($ticket->ticketType->is_long_term) {
+        if ($userTicket->ticketType->is_long_term) {
             throw ValidationException::withMessages([
                 'ticket' => ['Bilety dlugoterminowe sa aktywne od daty zakupu i nie wymagaja aktywacji.'],
             ]);
         }
 
-        if ($ticket->is_active) {
+        if ($userTicket->is_active) {
             throw ValidationException::withMessages([
                 'ticket' => ['Ten bilet jest juz aktywny.'],
             ]);
         }
 
         $validFrom = now();
-        $validUntil = $validFrom->copy()->addMinutes($ticket->ticketType->validity_minutes);
+        $validUntil = $validFrom->copy()->addMinutes($userTicket->ticketType->validity_minutes);
 
-        $ticket->update([
+        $userTicket->update([
             'valid_from' => $validFrom,
             'valid_until' => $validUntil,
             'is_active' => true,
         ]);
 
-        $ticket->refresh()->load('ticketType');
+        $userTicket->refresh()->load('ticketType');
 
         return response()->json([
             'message' => 'Bilet aktywowany.',
-            'ticket' => $this->ticketPayload($ticket),
+            'ticket' => $this->ticketPayload($userTicket),
         ]);
     }
 

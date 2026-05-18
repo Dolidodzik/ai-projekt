@@ -41,8 +41,13 @@ RUN if ! getent group ${GID} >/dev/null; then addgroup -g ${GID} dev; fi \
 
 WORKDIR /var/www/html
 
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
+
 USER ${UID}:${GID}
 
 EXPOSE 9000
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm", "-F"]

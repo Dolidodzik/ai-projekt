@@ -1,27 +1,41 @@
-/vendor/
-node_modules/
-npm-debug.log
-yarn-error.log
-
-bootstrap/compiled.php
-app/storage/
-
-public/storage
-public/hot
-
-public_html/storage
-public_html/hot
-
-storage/*.key
+# Environment
 .env
+.env.backup
+.env.production
+
+# Dependencies
+/vendor/
+/backend/vendor/
+/node_modules/
+/frontend/node_modules/
+
+# Laravel — symlink from `php artisan storage:link` (do not commit; broken on Windows)
+/backend/public/storage
+/public/storage
+/public_html/storage
+
+# Laravel runtime / cache
+/backend/storage/*.key
+/backend/storage/pail
+/backend/bootstrap/cache/*.php
+!/backend/bootstrap/cache/.gitignore
+/backend/storage/logs/*
+!/backend/storage/logs/.gitignore
+
+# Frontend build
+/frontend/dist
+/public/build
+/public/hot
+/public_html/hot
+
+# IDE / OS
+.phpunit.result.cache
+.phpactor.json
+auth.json
 Homestead.yaml
 Homestead.json
 /.vagrant
-.phpunit.result.cache
-
-/public/build
-/storage/pail
-.env.backup
-.env.production
-.phpactor.json
-auth.json
+npm-debug.log
+yarn-error.log
+Thumbs.db
+.DS_Store
