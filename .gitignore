@@ -27,6 +27,7 @@ Homestead.json
 .phpactor.json
 auth.json
 <<<<<<< HEAD
+<<<<<<< HEAD
 myfiles/
 =======
 
@@ -61,3 +62,7 @@ backend/node_modules/
 frontend/dist/
 frontend/.vite/
 >>>>>>> origin/piotr-feature-branch
+=======
+
+backend/public/uploads/announcements/
+>>>>>>> origin/dominik-feature-branch
