@@ -11,9 +11,54 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ./.env:/var/www/html/.env:ro
+    environment:
+      ROUTE_PLANNER_URL: ${ROUTE_PLANNER_URL:-http://route-planner:8000}
     depends_on:
       db:
         condition: service_healthy
+      route-planner:
+        condition: service_healthy
+    networks:
+      - ai2_net
+
+  route-planner:
+    build:
+      context: ./route-planner
+    container_name: ai2_route_planner
+    restart: unless-stopped
+    volumes:
+      - ./route-planner/app:/app/app
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-ai2_projekt}
+      DB_USERNAME: ${POSTGRES_USER:-ai2_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-ai2_secret}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     networks:
       - ai2_net
 
@@ -33,11 +78,15 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ./.env:/var/www/html/.env:ro
+    environment:
+      ROUTE_PLANNER_URL: ${ROUTE_PLANNER_URL:-http://route-planner:8000}
     depends_on:
       db:
         condition: service_healthy
       app:
         condition: service_started
+      route-planner:
+        condition: service_healthy
     networks:
       - ai2_net
 
@@ -84,6 +133,10 @@ services:
     container_name: ai2_node
     restart: unless-stopped
     working_dir: /app
+    env_file:
+      - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
     volumes:
       - ./frontend:/app
     ports:
