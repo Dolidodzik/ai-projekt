@@ -61,7 +61,7 @@ export function ResultsPage() {
         }
       } catch {
         if (!cancelled) {
-          setError('Failed to load route geometry.')
+          setError('Nie udalo sie zaladowac geometrii trasy.')
         }
       } finally {
         if (!cancelled) {
@@ -109,19 +109,19 @@ export function ResultsPage() {
     <section className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Route result</h1>
+          <h1 className="text-2xl font-semibold">Wynik trasy</h1>
           <p className="mt-2 text-slate-600">
             {planResult.from_stop.stop_name} -&gt; {planResult.to_stop.stop_name}
           </p>
         </div>
         <Link to="/" className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700">
-          New search
+          Nowe wyszukiwanie
         </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)] lg:items-start">
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-          {isLoading ? <div className="p-4"><Spinner label="Loading map..." /></div> : null}
+          {isLoading ? <div className="p-4"><Spinner label="Ladowanie mapy..." /></div> : null}
           {!isLoading && error ? <div className="p-4"><Alert>{error}</Alert></div> : null}
           {!isLoading && !error ? (
             <RouteResultMap planResult={mapResult} tripDetails={tripDetails} transit={selectedTransit} />
@@ -130,7 +130,7 @@ export function ResultsPage() {
 
         <aside className="space-y-4">
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-semibold">Next departures</h2>
+            <h2 className="text-lg font-semibold">Najblizsze odjazdy</h2>
             {historyMessage ? <p className="mt-2 text-xs text-emerald-700">{historyMessage}</p> : null}
             {!isAuthenticated ? (
               <p className="mt-2 text-xs text-slate-500">
@@ -157,22 +157,22 @@ export function ResultsPage() {
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-semibold">Summary</h2>
+            <h2 className="text-lg font-semibold">Podsumowanie</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div>
-                <dt className="text-slate-500">Origin stop</dt>
+                <dt className="text-slate-500">Przystanek poczatkowy</dt>
                 <dd className="font-medium">{planResult.from_stop.stop_name}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Destination stop</dt>
+                <dt className="text-slate-500">Przystanek docelowy</dt>
                 <dd className="font-medium">{planResult.to_stop.stop_name}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Departure</dt>
+                <dt className="text-slate-500">Odjazd</dt>
                 <dd className="font-medium">{formatLocaleDateTime24(planResult.depart_at)}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Max transfers</dt>
+                <dt className="text-slate-500">Maks. przesiadki</dt>
                 <dd className="font-medium">{planResult.max_transfers}</dd>
               </div>
               <div>
@@ -181,7 +181,7 @@ export function ResultsPage() {
               </div>
               {walkingSummary ? (
                 <div>
-                  <dt className="text-slate-500">Walking</dt>
+                  <dt className="text-slate-500">Pieszo</dt>
                   <dd className="font-medium">{walkingSummary}</dd>
                 </div>
               ) : null}
@@ -189,10 +189,10 @@ export function ResultsPage() {
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-semibold">Transit</h2>
+            <h2 className="text-lg font-semibold">Komunikacja</h2>
             {selectedTransit.type === 'direct' ? (
               <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm">
-                <p className="font-medium">Line {selectedTransit.route.short_name}</p>
+                <p className="font-medium">Linia {selectedTransit.route.short_name}</p>
                 <p className="mt-1 text-slate-600">{selectedTransit.route.long_name}</p>
                 <p className="mt-3">
                   {selectedTransit.from_departure_time} -&gt; {selectedTransit.to_arrival_time}
@@ -207,7 +207,7 @@ export function ResultsPage() {
                 {selectedTransit.legs.map((leg, index) => (
                   <div key={`${leg.trip_pk}-${index}`} className="rounded-xl bg-slate-50 p-4 text-sm">
                     <p className="font-medium">
-                      Leg {index + 1}: line {leg.route.short_name}
+                      Odcinek {index + 1}: linia {leg.route.short_name}
                     </p>
                     <p className="mt-1 text-slate-600">{leg.route.long_name}</p>
                     <p className="mt-3">

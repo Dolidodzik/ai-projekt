@@ -32,9 +32,9 @@ export function MapPickerModal({ open, initialPosition, onClose, onConfirm }: Ma
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
       <div className="w-full max-w-3xl rounded-2xl bg-white p-4 shadow-xl">
         <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold">Pick a point on the map</h2>
+          <h2 className="text-lg font-semibold">Wybierz punkt na mapie</h2>
           <button type="button" onClick={onClose} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
-            Close
+            Zamknij
           </button>
         </div>
         <MapContainer center={center} zoom={14} className="h-[420px] w-full rounded-xl">
@@ -44,7 +44,7 @@ export function MapPickerModal({ open, initialPosition, onClose, onConfirm }: Ma
         </MapContainer>
         <div className="mt-4 flex justify-end gap-3">
           <button type="button" onClick={onClose} className="rounded-lg border border-slate-300 px-4 py-2 text-sm">
-            Cancel
+            Anuluj
           </button>
           <button
             type="button"
@@ -58,7 +58,7 @@ export function MapPickerModal({ open, initialPosition, onClose, onConfirm }: Ma
             }}
             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
-            Use point
+            Uzyj punktu
           </button>
         </div>
       </div>

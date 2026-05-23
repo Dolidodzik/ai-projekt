@@ -57,7 +57,7 @@ export function PlannerPage() {
       savePlanResult(result)
       navigate('/results', { state: { planResult: result } })
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Route search failed.')
+      setError(requestError instanceof Error ? requestError.message : 'Wyszukiwanie trasy nie powiodlo sie.')
     } finally {
       setIsSubmitting(false)
     }
@@ -66,18 +66,18 @@ export function PlannerPage() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Plan a route</h1>
-        <p className="mt-2 text-slate-600">Search by address or map point.</p>
+        <h1 className="text-2xl font-semibold">Planuj trase</h1>
+        <p className="mt-2 text-slate-600">Wyszukaj polaczenie po adresie lub punkcie na mapie.</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <EndpointField label="From" value={from} onChange={setFrom} onOpenMap={() => setMapTarget('from')} />
-        <EndpointField label="To" value={to} onChange={setTo} onOpenMap={() => setMapTarget('to')} />
+        <EndpointField label="Skad" value={from} onChange={setFrom} onOpenMap={() => setMapTarget('from')} />
+        <EndpointField label="Dokad" value={to} onChange={setTo} onOpenMap={() => setMapTarget('to')} />
       </div>
 
       <div className="grid gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 md:grid-cols-2">
         <div className="block text-sm">
-          <span className="mb-2 block font-medium text-slate-700">Departure time</span>
+          <span className="mb-2 block font-medium text-slate-700">Godzina odjazdu</span>
           <div className="grid gap-2 sm:grid-cols-2">
             <input
               type="date"
@@ -97,7 +97,7 @@ export function PlannerPage() {
           </div>
         </div>
         <label className="block text-sm">
-          <span className="mb-2 block font-medium text-slate-700">Max transfers</span>
+          <span className="mb-2 block font-medium text-slate-700">Maks. przesiadki</span>
           <select
             value={maxTransfers}
             onChange={(event) => setMaxTransfers(Number(event.target.value))}
@@ -113,7 +113,7 @@ export function PlannerPage() {
       </div>
 
       {error ? <Alert>{error}</Alert> : null}
-      {isSubmitting ? <Spinner label="Searching routes..." /> : null}
+      {isSubmitting ? <Spinner label="Szukam polaczen..." /> : null}
 
       <button
         type="button"
@@ -121,7 +121,7 @@ export function PlannerPage() {
         disabled={isSubmitting}
         className="rounded-lg bg-emerald-600 px-5 py-3 text-sm font-medium text-white disabled:opacity-50"
       >
-        Search route
+        Szukaj trasy
       </button>
 
       <MapPickerModal
@@ -130,10 +130,10 @@ export function PlannerPage() {
         onClose={() => setMapTarget(null)}
         onConfirm={(lat, lon) => {
           if (mapTarget === 'from') {
-            setFrom({ mode: 'map', label: 'Map point', lat, lon, stopId: null })
+            setFrom({ mode: 'map', label: 'Punkt na mapie', lat, lon, stopId: null })
           }
           if (mapTarget === 'to') {
-            setTo({ mode: 'map', label: 'Map point', lat, lon, stopId: null })
+            setTo({ mode: 'map', label: 'Punkt na mapie', lat, lon, stopId: null })
           }
           setMapTarget(null)
         }}

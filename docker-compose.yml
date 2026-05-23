@@ -124,6 +124,24 @@ services:
     networks:
       - ai2_net
 
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: ai2_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ai2_net
+
   node:
     build:
       context: ./docker/node
@@ -150,4 +168,6 @@ networks:
 
 volumes:
   pg_data:
+    driver: local
+  pgadmin_data:
     driver: local

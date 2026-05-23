@@ -56,14 +56,14 @@ export function EndpointField({ label, value, onChange, onOpenMap }: EndpointFie
             onClick={() => onChange(emptyEndpoint('address'))}
             className={`rounded-md px-3 py-1 text-sm ${value.mode === 'address' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600'}`}
           >
-            Address
+            Adres
           </button>
           <button
             type="button"
             onClick={() => onChange(emptyEndpoint('map'))}
             className={`rounded-md px-3 py-1 text-sm ${value.mode === 'map' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600'}`}
           >
-            Map
+            Mapa
           </button>
         </div>
       </div>
@@ -73,10 +73,10 @@ export function EndpointField({ label, value, onChange, onOpenMap }: EndpointFie
           <input
             value={value.label}
             onChange={(event) => onChange({ ...value, label: event.target.value, lat: null, lon: null, stopId: null })}
-            placeholder="Search address"
+            placeholder="Wyszukaj adres"
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
           />
-          {isSearching ? <p className="text-sm text-slate-500">Searching...</p> : null}
+          {isSearching ? <p className="text-sm text-slate-500">Szukam...</p> : null}
           {visibleSuggestions.length > 0 ? (
             <ul className="max-h-48 overflow-auto rounded-lg border border-slate-200 bg-white">
               {visibleSuggestions.map((item) => (
@@ -108,14 +108,14 @@ export function EndpointField({ label, value, onChange, onOpenMap }: EndpointFie
             onClick={onOpenMap}
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700"
           >
-            Choose on map
+            Wybierz na mapie
           </button>
           {value.lat !== null && value.lon !== null ? (
             <p className="text-sm text-slate-600">
               {value.lat.toFixed(5)}, {value.lon.toFixed(5)}
             </p>
           ) : (
-            <p className="text-sm text-slate-500">No point selected.</p>
+            <p className="text-sm text-slate-500">Nie wybrano punktu.</p>
           )}
         </div>
       )}

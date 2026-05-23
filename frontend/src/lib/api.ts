@@ -3,7 +3,7 @@ export class ApiError extends Error {
   readonly body: unknown
 
   constructor(status: number, body: unknown, message?: string) {
-    super(message ?? `Request failed with status ${status}`)
+    super(message ?? `Zadanie nie powiodlo sie (HTTP ${status})`)
     this.status = status
     this.body = body
   }

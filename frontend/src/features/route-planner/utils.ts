@@ -34,7 +34,7 @@ export function validateEndpoint(endpoint: PlannerEndpoint): string | null {
   }
 
   if (endpoint.lat === null || endpoint.lon === null) {
-    return 'Select an address or map point.'
+    return 'Wybierz adres lub punkt na mapie.'
   }
 
   return null
@@ -54,7 +54,7 @@ export function formatTimeInputValue(date: Date): string {
 
 export function validateTimeInput24(value: string): string | null {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) {
-    return 'Use 24-hour time in HH:mm format.'
+    return 'Uzyj formatu 24-godzinnego (GG:mm).'
   }
 
   return null
@@ -75,7 +75,7 @@ export function formatWalkingSummary(segments: WalkingSegment[]): string | null 
   const totalSeconds = segments.reduce((sum, segment) => sum + (segment.ors?.duration_s ?? 0), 0)
 
   if (totalMeters <= 0 && totalSeconds <= 0) {
-    return `${segments.length} walking segment(s)`
+    return segments.length === 1 ? '1 odcinek pieszy' : `${segments.length} odcinki piesze`
   }
 
   return `${Math.round(totalMeters)} m, ${Math.round(totalSeconds / 60)} min`
@@ -112,12 +112,12 @@ export function transitSummary(transit: TransitResult, departAt: string): string
   const minutes = minutesUntilDeparture(firstDeparture, departAt)
 
   if (transit.type === 'direct') {
-    return `Departure in ${minutes} min, line ${transit.route.short_name}`
+    return `Odjazd za ${minutes} min, linia ${transit.route.short_name}`
   }
 
-  const lines = transit.legs.map((leg) => leg.route.short_name).join(' -> ')
+  const lines = transit.legs.map((leg) => leg.route.short_name).join(' → ')
 
-  return `Departure in ${minutes} min, ${lines}`
+  return `Odjazd za ${minutes} min, ${lines}`
 }
 
 export function getTripPks(transit: TransitResult): number[] {
@@ -163,8 +163,8 @@ export function formatDurationMinutes(minutes: number | null | undefined): strin
   const rest = minutes % 60
 
   if (rest === 0) {
-    return `${hours} h`
+    return `${hours} godz.`
   }
 
-  return `${hours} h ${rest} min`
+  return `${hours} godz. ${rest} min`
 }

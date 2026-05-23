@@ -17,19 +17,19 @@ function formatTimeLabel(raw: string): string {
 function routeModeSuffix(routeType: number): string {
   switch (routeType) {
     case 0:
-      return 'tram'
+      return 'tramwaj'
     case 1:
       return 'metro'
     case 2:
-      return 'rail'
+      return 'kolej'
     case 3:
-      return 'bus'
+      return 'autobus'
     case 4:
-      return 'ferry'
+      return 'prom'
     case 11:
-      return 'trolley'
+      return 'trolejbus'
     default:
-      return `type ${routeType}`
+      return `typ ${routeType}`
   }
 }
 
@@ -68,7 +68,7 @@ export function SchedulePage() {
       })
       .catch((e: unknown) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Failed to load routes.')
+          setError(e instanceof Error ? e.message : 'Nie udalo sie zaladowac linii.')
         }
       })
       .finally(() => {
@@ -107,7 +107,7 @@ export function SchedulePage() {
       })
       .catch((e: unknown) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Failed to load line pattern.')
+          setError(e instanceof Error ? e.message : 'Nie udalo sie zaladowac trasy linii.')
         }
       })
       .finally(() => {
@@ -144,7 +144,7 @@ export function SchedulePage() {
       })
       .catch((e: unknown) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Failed to load times.')
+          setError(e instanceof Error ? e.message : 'Nie udalo sie zaladowac godzin.')
         }
       })
       .finally(() => {
@@ -186,11 +186,11 @@ export function SchedulePage() {
     <section className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Timetable</h1>
-          <p className="mt-2 text-slate-600">Pick a line, direction, and stop for scheduled times.</p>
+          <h1 className="text-2xl font-semibold">Rozklad jazdy</h1>
+          <p className="mt-2 text-slate-600">Wybierz linie, kierunek i przystanek, aby zobaczyc godziny odjazdow.</p>
         </div>
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Service date</span>
+          <span className="mb-1 block font-medium text-slate-700">Data kursowania</span>
           <input
             type="date"
             value={scheduleDate}
@@ -204,9 +204,9 @@ export function SchedulePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-lg font-semibold">Lines</h2>
-          {routesLoading ? <Spinner label="Loading lines..." /> : routes.length === 0 ? (
-            <p className="text-sm text-slate-500">No routes in database.</p>
+          <h2 className="text-lg font-semibold">Linie</h2>
+          {routesLoading ? <Spinner label="Ladowanie linii..." /> : routes.length === 0 ? (
+            <p className="text-sm text-slate-500">Brak linii w bazie danych.</p>
           ) : (
             <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto">
               {routes.map((r) => {
@@ -232,18 +232,18 @@ export function SchedulePage() {
             </div>
           )}
 
-          {patternLoading ? <Spinner label="Loading pattern..." /> : null}
+          {patternLoading ? <Spinner label="Ladowanie trasy..." /> : null}
 
           {pattern.length > 1 ? (
             <div>
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm font-medium text-slate-700">Direction</h3>
+                <h3 className="text-sm font-medium text-slate-700">Kierunek</h3>
                 <button
                   type="button"
                   onClick={cycleDirection}
                   className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-slate-900"
                 >
-                  Change direction
+                  Zmien kierunek
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -261,7 +261,7 @@ export function SchedulePage() {
                         : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    <span className="block font-medium">Towards {d.headsign ?? 'terminus'}</span>
+                    <span className="block font-medium">Kierunek: {d.headsign ?? 'koncowy'}</span>
                   </button>
                 ))}
               </div>
@@ -270,7 +270,7 @@ export function SchedulePage() {
 
           {activeDirection ? (
             <div>
-              <h3 className="mb-2 text-sm font-medium text-slate-700">Stops</h3>
+              <h3 className="mb-2 text-sm font-medium text-slate-700">Przystanki</h3>
               <ol className="max-h-72 space-y-1 overflow-y-auto text-sm">
                 {activeDirection.stops.map((row) => (
                   <li key={row.stop.id}>
@@ -291,9 +291,9 @@ export function SchedulePage() {
 
           {lineStopId !== null ? (
             <div>
-              <h3 className="mb-2 text-sm font-medium text-slate-700">Arrivals at stop</h3>
-              {lineTimesLoading ? <Spinner label="Loading times..." /> : lineTimes.length === 0 ? (
-                <p className="text-sm text-slate-500">No trips on this date (check calendar data).</p>
+              <h3 className="mb-2 text-sm font-medium text-slate-700">Odjazdy z przystanku</h3>
+              {lineTimesLoading ? <Spinner label="Ladowanie godzin..." /> : lineTimes.length === 0 ? (
+                <p className="text-sm text-slate-500">Brak kursow w tym dniu (sprawdz dane kalendarza).</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {lineTimes.map((t) => (
@@ -308,7 +308,7 @@ export function SchedulePage() {
         </div>
 
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-          <h2 className="mb-2 text-lg font-semibold">Map</h2>
+          <h2 className="mb-2 text-lg font-semibold">Mapa</h2>
           <MapContainer
             center={mapCenter}
             zoom={13}

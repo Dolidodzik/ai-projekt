@@ -25,7 +25,7 @@ class RoutePlannerController extends Controller
 
         $stop = $this->planner->nearestStop((float) $data['lat'], (float) $data['lon']);
         if (! $stop) {
-            return response()->json(['message' => 'No GTFS stops found.'], 404);
+            return response()->json(['message' => 'Nie znaleziono przystankow GTFS.'], 404);
         }
 
         return response()->json($stop);
@@ -42,7 +42,7 @@ class RoutePlannerController extends Controller
     {
         $details = $this->planner->tripDetails($trip_id);
         if (! $details) {
-            return response()->json(['message' => 'Trip not found.'], 404);
+            return response()->json(['message' => 'Nie znaleziono kursu.'], 404);
         }
 
         return response()->json($details);
@@ -131,7 +131,7 @@ class RoutePlannerController extends Controller
 
         if ($transitOptions === []) {
             return response()->json([
-                'message' => 'No route found for selected endpoints.',
+                'message' => 'Nie znaleziono polaczenia dla wybranych punktow.',
                 'from_stop' => $from['stop'],
                 'to_stop' => $to['stop'],
                 'max_transfers' => $maxTransfers,
@@ -162,7 +162,7 @@ class RoutePlannerController extends Controller
         if ($stopId !== null) {
             $stop = $this->stopById((int) $stopId);
             if (! $stop) {
-                return response()->json(['message' => "Unknown {$prefix}_stop_id."], 404);
+                return response()->json(['message' => "Nieznany identyfikator przystanku ({$prefix}_stop_id)."], 404);
             }
 
             return ['stop' => $stop, 'walk' => null];
@@ -170,7 +170,7 @@ class RoutePlannerController extends Controller
 
         if ($lat === null || $lon === null) {
             return response()->json([
-                'message' => "Provide either {$prefix}_stop_id or {$prefix}_lat + {$prefix}_lon.",
+                'message' => "Podaj {$prefix}_stop_id albo wspolrzedne {$prefix}_lat i {$prefix}_lon.",
             ], 422);
         }
 
@@ -178,7 +178,7 @@ class RoutePlannerController extends Controller
         if ($nearbyStops === []) {
             $nearest = $this->planner->nearestStop((float) $lat, (float) $lon);
             if (! $nearest) {
-                return response()->json(['message' => 'No GTFS stops found.'], 404);
+                return response()->json(['message' => 'Nie znaleziono przystankow GTFS.'], 404);
             }
 
             $nearbyStops = [$nearest];

@@ -14,7 +14,7 @@ export function Navbar() {
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <NavLink to="/" className="block shrink-0">
-          <p className="text-lg font-semibold text-slate-900">Rzeszow Transit</p>
+          <p className="text-lg font-semibold text-slate-900">Komunikacja Rzeszow</p>
           <p className="text-sm text-slate-500">Komunikacja miejska</p>
         </NavLink>
         <nav className="flex flex-wrap items-center gap-2">

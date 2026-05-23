@@ -33,7 +33,7 @@ class ScheduleController extends Controller
     {
         $pattern = $this->planner->routePattern($route_id);
         if ($pattern === null) {
-            return response()->json(['message' => 'Route not found.'], 404);
+            return response()->json(['message' => 'Nie znaleziono linii.'], 404);
         }
 
         return response()->json($pattern);
@@ -42,10 +42,10 @@ class ScheduleController extends Controller
     public function routeStopDepartures(Request $request, int $route_id, int $stop_id): JsonResponse
     {
         if (! DB::table('gtfs_routes')->where('id', $route_id)->exists()) {
-            return response()->json(['message' => 'Route not found.'], 404);
+            return response()->json(['message' => 'Nie znaleziono linii.'], 404);
         }
         if (! DB::table('gtfs_stops')->where('id', $stop_id)->exists()) {
-            return response()->json(['message' => 'Stop not found.'], 404);
+            return response()->json(['message' => 'Nie znaleziono przystanku.'], 404);
         }
 
         $data = $request->validate([
@@ -69,7 +69,7 @@ class ScheduleController extends Controller
     public function stopDepartures(Request $request, int $stop_id): JsonResponse
     {
         if (! DB::table('gtfs_stops')->where('id', $stop_id)->exists()) {
-            return response()->json(['message' => 'Stop not found.'], 404);
+            return response()->json(['message' => 'Nie znaleziono przystanku.'], 404);
         }
 
         $data = $request->validate([
