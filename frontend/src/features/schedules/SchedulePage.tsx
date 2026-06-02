@@ -159,10 +159,11 @@ export function SchedulePage() {
 
   const mapLine = shapeToLatLngs(activeDirection?.shape ?? [])
   const selectedStopRow: PatternStopRow | undefined = activeDirection?.stops.find((r) => r.stop.id === lineStopId)
+  const firstMapPoint = mapLine[0] as [number, number] | undefined
   const mapCenter: [number, number] = selectedStopRow
     ? [selectedStopRow.stop.stop_lat, selectedStopRow.stop.stop_lon]
-    : mapLine[0]
-      ? [mapLine[0][0] as number, mapLine[0][1] as number]
+    : firstMapPoint
+      ? [firstMapPoint[0], firstMapPoint[1]]
       : activeDirection?.stops[0]
         ? [activeDirection.stops[0].stop.stop_lat, activeDirection.stops[0].stop.stop_lon]
         : [50.041, 21.999]
