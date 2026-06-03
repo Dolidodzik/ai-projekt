@@ -1,15 +1,18 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { NavLink, Navigate, useParams } from 'react-router-dom'
+import { AchievementsPanel } from '../components/achievements/AchievementsPanel'
 import { ReportsPanel } from '../components/reports/ReportsPanel'
 import { RideHistoryPanel } from '../components/ride-history/RideHistoryPanel'
 import { BuyTicketsPanel } from '../components/tickets/BuyTicketsPanel'
 import { MyTicketsPanel } from '../components/tickets/MyTicketsPanel'
 import { useAuth, type AuthUser } from '../contexts/AuthContext'
+import { getApiBaseUrl } from '../lib/api'
 
 const SECTIONS = [
   { slug: 'profil', label: 'Profil' },
   { slug: 'bilety', label: 'Moje bilety' },
   { slug: 'kup-bilet', label: 'Kup bilet' },
+  { slug: 'osiagniecia', label: 'Osiagniecia' },
   { slug: 'historia', label: 'Historia przejazdow' },
   { slug: 'zgloszenia', label: 'Zgloszenia' },
 ] as const
@@ -19,6 +22,7 @@ type SectionSlug = (typeof SECTIONS)[number]['slug']
 export function AccountSettingsPage() {
   const { section } = useParams<{ section?: string }>()
   const {
+    token,
     user,
     isAuthenticated,
     loading: authLoading,
@@ -119,6 +123,41 @@ export function AccountSettingsPage() {
     }
   }
 
+  async function handleDataExport() {
+    setLoading(true)
+    setError('')
+    setMessage('')
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/auth/export-data`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}))
+        throw new Error(String(payload?.message ?? `HTTP ${response.status}`))
+      }
+      const blob = await response.blob()
+      const disposition = response.headers.get('Content-Disposition') ?? ''
+      const fileNameMatch = disposition.match(/filename="([^"]+)"/)
+      const fileName = fileNameMatch?.[1] ?? 'dane-rodo-uzytkownika.pdf'
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setMessage('Eksport danych zostal pobrany.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udalo sie pobrac eksportu danych')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
       <aside className="space-y-4">
@@ -133,7 +172,7 @@ export function AccountSettingsPage() {
               to={`/account/${item.slug}`}
               className={({ isActive }) =>
                 `rounded-lg px-3 py-2 text-sm font-medium ${
-                  isActive ? 'bg-[#1754d8] text-white' : 'text-slate-700 hover:bg-slate-100'
+                  isActive ? 'bg-brand text-white' : 'text-slate-700 hover:bg-slate-100'
                 }`
               }
             >
@@ -156,7 +195,7 @@ export function AccountSettingsPage() {
           <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
         ) : null}
         {message ? (
-          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <p className="mb-4 rounded-lg border border-brand/20 bg-brand/10 px-4 py-3 text-sm text-brand">
             {message}
           </p>
         ) : null}
@@ -204,6 +243,20 @@ export function AccountSettingsPage() {
                 <SubmitButton disabled={loading}>Zmien haslo</SubmitButton>
               </form>
             </section>
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:col-span-2">
+              <h2 className="mb-2 text-lg font-semibold">Eksport danych</h2>
+              <p className="mb-4 text-sm text-slate-600">
+                Pobierz dane konta, biletow, przejazdow, zgloszen, osiagniec i kodow rabatowych w pliku JSON.
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleDataExport()}
+                disabled={loading}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              >
+                Eksportuj dane (RODO)
+              </button>
+            </section>
           </div>
         ) : null}
 
@@ -232,6 +285,8 @@ export function AccountSettingsPage() {
         ) : null}
 
         {activeSection === 'historia' ? <RideHistoryPanel apiRequest={apiRequest} onError={setError} /> : null}
+
+        {activeSection === 'osiagniecia' ? <AchievementsPanel apiRequest={apiRequest} onError={setError} /> : null}
 
         {activeSection === 'zgloszenia' ? (
           <ReportsPanel
@@ -265,7 +320,7 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         required
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
       />
     </label>
   )
@@ -276,7 +331,7 @@ function SubmitButton({ disabled, children }: { disabled?: boolean; children: st
     <button
       type="submit"
       disabled={disabled}
-      className="rounded-lg bg-[#1754d8] px-4 py-2 text-sm font-medium text-white hover:bg-[#1549bc] disabled:opacity-60"
+      className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-60"
     >
       {children}
     </button>

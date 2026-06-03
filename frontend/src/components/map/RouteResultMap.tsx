@@ -62,7 +62,7 @@ export function RouteResultMap({ planResult, tripDetails, transit }: RouteResult
       <Marker position={[planResult.from_stop.stop_lat, planResult.from_stop.stop_lon]} />
       <Marker position={[planResult.to_stop.stop_lat, planResult.to_stop.stop_lon]} />
       {walkLines.length > 0 ? <Polyline positions={walkLines} color="#2563eb" weight={4} /> : null}
-      {transitLines.length > 0 ? <Polyline positions={transitLines} color="#059669" weight={5} /> : null}
+      {transitLines.length > 0 ? <Polyline positions={transitLines} color="#1754d8" weight={5} /> : null}
     </MapContainer>
   )
 }

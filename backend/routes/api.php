@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RideHistoryController;
@@ -16,6 +17,7 @@ Route::get('/routes/list', [RoutePlannerController::class, 'listRoutes']);
 Route::get('/trip-details/{trip_id}', [RoutePlannerController::class, 'tripDetails'])->whereNumber('trip_id');
 
 Route::get('/stops', [ScheduleController::class, 'stops']);
+Route::get('/schedules/routes/pdf', [ScheduleController::class, 'routesPdf']);
 Route::get('/schedules/routes/{route_id}/stops/{stop_id}/departures', [ScheduleController::class, 'routeStopDepartures'])
     ->whereNumber('route_id')
     ->whereNumber('stop_id');
@@ -31,6 +33,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function (): void {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/auth/me', [ProfileController::class, 'me']);
+    Route::get('/auth/export-data', [ProfileController::class, 'exportData']);
     Route::patch('/auth/profile', [ProfileController::class, 'update']);
     Route::patch('/auth/password', [ProfileController::class, 'updatePassword']);
 
@@ -50,4 +53,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function (): void {
 
     Route::get('/reports/user', [ReportController::class, 'userIndex']);
     Route::post('/reports', [ReportController::class, 'store']);
+
+    Route::get('/achievements', [AchievementController::class, 'index']);
+    Route::post('/discount-codes/validate', [AchievementController::class, 'validateDiscountCode']);
 });

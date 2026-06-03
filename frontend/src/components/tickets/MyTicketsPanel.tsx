@@ -68,7 +68,7 @@ export function MyTicketsPanel({
               type="button"
               onClick={() => setFilter(value)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-                filter === value ? 'bg-[#1754d8] text-white' : 'text-slate-700'
+                filter === value ? 'bg-brand text-white' : 'text-slate-700'
               }`}
             >
               {value === 'all'
@@ -123,7 +123,7 @@ export function MyTicketsPanel({
                   type="button"
                   disabled={loading}
                   onClick={() => void handleActivate(ticket.id)}
-                  className="mt-3 rounded-lg bg-[#1754d8] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1549bc] disabled:opacity-60"
+                  className="mt-3 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-60"
                 >
                   Aktywuj bilet
                 </button>

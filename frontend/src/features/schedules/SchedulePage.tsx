@@ -3,7 +3,7 @@ import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet'
 import { Alert } from '../../components/ui/Alert'
 import { Spinner } from '../../components/ui/Spinner'
 import { shapeToLatLngs } from '../../components/map/geo'
-import { fetchRoutePattern, fetchRouteStopTimes, fetchRoutesList } from './api'
+import { fetchRoutePattern, fetchRouteStopTimes, fetchRoutesList, getRoutesPdfUrl } from './api'
 import type { DirectionPattern, ListedRoute, PatternStopRow } from './types'
 
 function formatTimeLabel(raw: string): string {
@@ -40,6 +40,7 @@ export function SchedulePage() {
   const [routes, setRoutes] = useState<ListedRoute[]>([])
   const [routesLoading, setRoutesLoading] = useState(true)
   const [routeId, setRouteId] = useState<number | null>(null)
+  const [pdfRouteIds, setPdfRouteIds] = useState<number[]>([])
   const [pattern, setPattern] = useState<DirectionPattern[]>([])
   const [endpointSplit, setEndpointSplit] = useState(false)
   const [directionKey, setDirectionKey] = useState<number | null>(null)
@@ -157,7 +158,7 @@ export function SchedulePage() {
     }
   }, [routeId, lineStopId, directionKey, scheduleDate, endpointSplit, activeDirection?.representative_trip_id])
 
-  const mapLine = shapeToLatLngs(activeDirection?.shape ?? [])
+  const mapLine = shapeToLatLngs(activeDirection?.shape ?? []) as [number, number][]
   const selectedStopRow: PatternStopRow | undefined = activeDirection?.stops.find((r) => r.stop.id === lineStopId)
   const firstMapPoint = mapLine[0] as [number, number] | undefined
   const mapCenter: [number, number] = selectedStopRow
@@ -171,6 +172,23 @@ export function SchedulePage() {
   const pickStop = useCallback((row: PatternStopRow) => {
     setLineStopId(row.stop.id)
   }, [])
+
+  const activateRoute = useCallback((id: number) => {
+    setRouteId(id)
+    setLineStopId(null)
+    setPdfRouteIds((current) => (current.includes(id) ? current : [...current, id]))
+  }, [])
+
+  const togglePdfRoute = useCallback((id: number) => {
+    setPdfRouteIds((current) => (current.includes(id) ? current.filter((route) => route !== id) : [...current, id]))
+  }, [])
+
+  const downloadPdf = useCallback(() => {
+    if (pdfRouteIds.length === 0) {
+      return
+    }
+    window.location.assign(getRoutesPdfUrl(pdfRouteIds, scheduleDate))
+  }, [pdfRouteIds, scheduleDate])
 
   const cycleDirection = useCallback(() => {
     if (pattern.length < 2) {
@@ -205,32 +223,58 @@ export function SchedulePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-lg font-semibold">Linie</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">Linie</h2>
+            <button
+              type="button"
+              onClick={downloadPdf}
+              disabled={pdfRouteIds.length === 0}
+              className="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-hover disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              Pobierz PDF
+            </button>
+          </div>
           {routesLoading ? <Spinner label="Ladowanie linii..." /> : routes.length === 0 ? (
             <p className="text-sm text-slate-500">Brak linii w bazie danych.</p>
           ) : (
-            <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto">
+            <div className="grid max-h-44 w-full max-w-md grid-cols-[repeat(auto-fit,minmax(5.25rem,1fr))] gap-2 overflow-y-auto overflow-x-hidden p-1">
               {routes.map((r) => {
                 const showMode =
                   (duplicateShortNames.get(r.short_name.trim()) ?? 0) > 1
+                const checkedForPdf = pdfRouteIds.includes(r.id)
                 return (
-                <button
-                  key={r.id}
-                  type="button"
-                  title={r.long_name ?? r.route_id}
-                  onClick={() => {
-                    setRouteId(r.id)
-                    setLineStopId(null)
-                  }}
-                  className={`min-w-[3rem] rounded-lg px-3 py-2 text-sm font-semibold ${
-                    routeId === r.id ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
-                  }`}
-                >
-                  {showMode ? `${r.short_name} · ${routeModeSuffix(r.route_type)}` : r.short_name}
-                </button>
+                  <div
+                    key={r.id}
+                    title={r.long_name ?? r.route_id}
+                    className={`flex min-w-0 items-center gap-2 rounded-lg px-2 py-2 ${
+                      routeId === r.id ? 'bg-brand/10 ring-2 ring-brand' : 'bg-slate-50 ring-1 ring-slate-200'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checkedForPdf}
+                      onChange={() => togglePdfRoute(r.id)}
+                      className="h-4 w-4 shrink-0 rounded border-slate-300 text-brand"
+                      aria-label={`Dodaj linie ${r.short_name} do PDF`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => activateRoute(r.id)}
+                      className={`min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm font-semibold ${
+                        routeId === r.id ? 'bg-brand text-white' : 'text-slate-800 hover:bg-slate-100'
+                      }`}
+                    >
+                      {showMode ? `${r.short_name} - ${routeModeSuffix(r.route_type)}` : r.short_name}
+                    </button>
+                  </div>
                 )
               })}
             </div>
+          )}
+          {pdfRouteIds.length > 0 ? (
+            <p className="text-xs text-slate-500">PDF obejmie {pdfRouteIds.length} wybranych linii.</p>
+          ) : (
+            <p className="text-xs text-slate-500">Zaznacz jedna lub kilka linii, aby pobrac wspolny PDF z mapa i rozkladem.</p>
           )}
 
           {patternLoading ? <Spinner label="Ladowanie trasy..." /> : null}
@@ -258,7 +302,7 @@ export function SchedulePage() {
                     }}
                     className={`rounded-lg px-3 py-2 text-left text-sm ${
                       directionKey === d.direction_key
-                        ? 'bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500'
+                        ? 'bg-brand/10 text-brand ring-2 ring-brand'
                         : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
                     }`}
                   >
@@ -279,7 +323,7 @@ export function SchedulePage() {
                       type="button"
                       onClick={() => pickStop(row)}
                       className={`w-full rounded-lg px-3 py-2 text-left ${
-                        lineStopId === row.stop.id ? 'bg-emerald-50 font-medium text-emerald-900' : 'hover:bg-slate-50'
+                        lineStopId === row.stop.id ? 'bg-brand/10 font-medium text-brand' : 'hover:bg-slate-50'
                       }`}
                     >
                       {row.stop_sequence}. {row.stop.stop_name}
@@ -317,7 +361,7 @@ export function SchedulePage() {
             key={`${routeId ?? 'x'}-${directionKey ?? 'd'}-${mapCenter[0].toFixed(4)}`}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {mapLine.length > 1 ? <Polyline positions={mapLine} color="#059669" weight={5} /> : null}
+            {mapLine.length > 1 ? <Polyline positions={mapLine} color="#1754d8" weight={5} /> : null}
             {selectedStopRow ? (
               <Marker position={[selectedStopRow.stop.stop_lat, selectedStopRow.stop.stop_lon]} />
             ) : activeDirection?.stops[0] ? (

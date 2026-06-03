@@ -76,7 +76,7 @@ export function SignInPage() {
             type="button"
             onClick={() => setMode('login')}
             className={`rounded-md px-4 py-2 text-sm font-medium ${
-              mode === 'login' ? 'bg-[#1754d8] text-white' : 'text-slate-700'
+              mode === 'login' ? 'bg-brand text-white' : 'text-slate-700'
             }`}
           >
             Logowanie
@@ -85,7 +85,7 @@ export function SignInPage() {
             type="button"
             onClick={() => setMode('register')}
             className={`rounded-md px-4 py-2 text-sm font-medium ${
-              mode === 'register' ? 'bg-[#1754d8] text-white' : 'text-slate-700'
+              mode === 'register' ? 'bg-brand text-white' : 'text-slate-700'
             }`}
           >
             Rejestracja
@@ -165,7 +165,7 @@ function AuthInput({
         onChange={(event) => onChange(event.target.value)}
         required
         minLength={minLength}
-        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20"
+        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
       />
     </label>
   )
@@ -176,7 +176,7 @@ function AuthButton({ disabled, children }: { disabled?: boolean; children: stri
     <button
       type="submit"
       disabled={disabled}
-      className="w-full rounded-lg bg-[#1754d8] px-4 py-2 text-sm font-medium text-white hover:bg-[#1549bc] disabled:opacity-60"
+      className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-60"
     >
       {children}
     </button>

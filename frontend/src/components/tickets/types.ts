@@ -10,6 +10,8 @@ export type UserTicket = {
   id: number
   ticket_type: TicketType
   purchase_date: string
+  discount_amount: string
+  final_price: string | null
   valid_from: string | null
   valid_until: string | null
   is_active: boolean
@@ -48,7 +50,7 @@ export function statusLabel(status: UserTicket['status']): string {
 export function statusClass(status: UserTicket['status']): string {
   switch (status) {
     case 'active':
-      return 'border-emerald-200 bg-emerald-50 text-emerald-700'
+      return 'border-brand/20 bg-brand/10 text-brand'
     case 'inactive':
       return 'border-amber-200 bg-amber-50 text-amber-700'
     case 'expired':

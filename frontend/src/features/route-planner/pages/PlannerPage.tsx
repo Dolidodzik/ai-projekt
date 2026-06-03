@@ -119,7 +119,7 @@ export function PlannerPage() {
         type="button"
         onClick={() => void submit()}
         disabled={isSubmitting}
-        className="rounded-lg bg-emerald-600 px-5 py-3 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-lg bg-brand px-5 py-3 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
       >
         Szukaj trasy
       </button>

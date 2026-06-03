@@ -112,7 +112,7 @@ function RouteSummary({ from, to }: { from: string | null; to: string | null }) 
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-[#1754d8]/5 px-3 py-2 text-sm text-[#1754d8]">
+    <div className="flex items-center gap-2 rounded-lg bg-brand/5 px-3 py-2 text-sm text-brand">
       <span className="font-medium">{from ?? '—'}</span>
       <span aria-hidden className="text-slate-400">
         →

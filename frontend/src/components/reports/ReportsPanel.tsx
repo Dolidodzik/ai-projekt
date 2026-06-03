@@ -123,7 +123,7 @@ function TabSwitch({
         type="button"
         onClick={() => onTabChange('list')}
         className={`rounded-md px-4 py-2 text-sm font-medium ${
-          tab === 'list' ? 'bg-[#1754d8] text-white' : 'text-slate-700'
+          tab === 'list' ? 'bg-brand text-white' : 'text-slate-700'
         }`}
       >
         Lista
@@ -132,7 +132,7 @@ function TabSwitch({
         type="button"
         onClick={() => onTabChange('create')}
         className={`rounded-md px-4 py-2 text-sm font-medium ${
-          tab === 'create' ? 'bg-[#1754d8] text-white' : 'text-slate-700'
+          tab === 'create' ? 'bg-brand text-white' : 'text-slate-700'
         }`}
       >
         Nowe zgloszenie
@@ -161,7 +161,7 @@ function ListTab({
         <button
           type="button"
           onClick={onCreateClick}
-          className="mt-4 rounded-lg bg-[#1754d8] px-4 py-2 text-sm font-medium text-white hover:bg-[#1549bc]"
+          className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
         >
           Utworz pierwsze zgloszenie
         </button>
@@ -214,7 +214,7 @@ function CreateTab({
           required
           minLength={3}
           maxLength={255}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
           placeholder="Np. Uszkodzony przystanek"
         />
       </label>
@@ -228,7 +228,7 @@ function CreateTab({
           minLength={10}
           rows={5}
           maxLength={5000}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#1754d8] focus:ring-2 focus:ring-[#1754d8]/20"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
           placeholder="Opisz problem szczegolowo..."
         />
       </label>
@@ -240,7 +240,7 @@ function CreateTab({
           accept="image/jpeg,image/jpg,image/png,image/webp"
           multiple
           onChange={onFilesChange}
-          className="w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[#1754d8]/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#1754d8]"
+          className="w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand"
         />
         <p className="mt-1 text-xs text-slate-400">JPG, PNG lub WebP, do 5 MB na plik</p>
 
@@ -269,7 +269,7 @@ function CreateTab({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-[#1754d8] px-4 py-2 text-sm font-medium text-white hover:bg-[#1549bc] disabled:opacity-60"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-60"
         >
           {submitting ? 'Wysylanie...' : 'Wyslij zgloszenie'}
         </button>

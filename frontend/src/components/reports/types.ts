@@ -53,6 +53,6 @@ export function statusClass(status: Report['status']): string {
     case 'in_progress':
       return 'border-amber-200 bg-amber-50 text-amber-700'
     case 'resolved':
-      return 'border-emerald-200 bg-emerald-50 text-emerald-700'
+      return 'border-brand/20 bg-brand/10 text-brand'
   }
 }

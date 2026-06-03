@@ -24,7 +24,7 @@ export function Navbar() {
               to={link.to}
               className={({ isActive }) =>
                 `rounded-lg px-3 py-2 text-sm font-medium ${
-                  isActive ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50'
+                  isActive ? 'bg-brand/10 text-brand' : 'text-slate-600 hover:bg-slate-50'
                 }`
               }
             >
@@ -35,7 +35,7 @@ export function Navbar() {
             <NavLink
               to="/account/profil"
               className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                accountActive ? 'bg-[#1754d8] text-white' : 'text-slate-600 hover:bg-slate-50'
+                accountActive ? 'bg-brand text-white' : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
               Profil
@@ -46,7 +46,7 @@ export function Navbar() {
               to="/sign-in"
               className={({ isActive }) =>
                 `rounded-lg px-3 py-2 text-sm font-medium ${
-                  isActive ? 'bg-[#1754d8] text-white' : 'text-slate-600 hover:bg-slate-50'
+                  isActive ? 'bg-brand text-white' : 'text-slate-600 hover:bg-slate-50'
                 }`
               }
             >

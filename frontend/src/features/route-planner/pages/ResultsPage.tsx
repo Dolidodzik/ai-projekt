@@ -23,6 +23,8 @@ interface ResultsLocationState {
 interface DepartureOption {
   originalIndex: number
   lineLabel: string
+  withTransfer: boolean
+  transferLinesLabel: string | null
   routeName: string | null
   relativeLabel: string
   exactTime: string
@@ -55,12 +57,27 @@ function lastArrivalTime(transit: TransitResult): string {
     : transit.legs[transit.legs.length - 1].to_arrival_time
 }
 
+function isTransferRoute(transit: TransitResult): boolean {
+  return transit.type !== 'direct'
+}
+
 function lineLabel(transit: TransitResult): string {
   if (transit.type === 'direct') {
     return transit.route.short_name
   }
 
-  return transit.legs.map((leg) => leg.route.short_name).join(' + ')
+  return transit.legs[0]?.route.short_name ?? '?'
+}
+
+function transferLinesLabel(transit: TransitResult): string | null {
+  if (transit.type === 'direct' || transit.legs.length <= 1) {
+    return null
+  }
+
+  return transit.legs
+    .slice(1)
+    .map((leg) => leg.route.short_name)
+    .join(' → ')
 }
 
 function routeName(transit: TransitResult): string | null {
@@ -124,6 +141,8 @@ export function ResultsPage() {
         return {
           originalIndex,
           lineLabel: lineLabel(transit),
+          withTransfer: isTransferRoute(transit),
+          transferLinesLabel: transferLinesLabel(transit),
           routeName: routeName(transit),
           relativeLabel: relative.label,
           exactTime: formatGtfsTimeLabel(departureTime),
@@ -216,10 +235,10 @@ export function ResultsPage() {
           <div>
             <h2 className="text-lg font-semibold">Najblizsze odjazdy</h2>
             <p className="text-sm text-slate-500">Wybierz kafelek, aby przelaczyc wariant trasy na mapie.</p>
-            {historyMessage ? <p className="mt-2 text-xs text-[#1754d8]">{historyMessage}</p> : null}
+            {historyMessage ? <p className="mt-2 text-xs text-brand">{historyMessage}</p> : null}
             {!isAuthenticated ? (
               <p className="mt-2 text-xs text-slate-500">
-                <Link to="/sign-in" className="font-medium text-[#1754d8] hover:underline">
+                <Link to="/sign-in" className="font-medium text-brand hover:underline">
                   Zaloguj sie
                 </Link>
                 , aby zapisywac trasy w historii.
@@ -300,8 +319,18 @@ export function ResultsPage() {
             <p className="mt-1 text-sm text-slate-500">Podluzne podsumowanie wybranego wariantu przejazdu.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-sm">
-            <span className="rounded-xl bg-red-600 px-4 py-3 text-lg font-bold text-white">
-              {lineLabel(selectedTransit)}
+            <span className="inline-flex flex-wrap items-center gap-2">
+              <span className="rounded-xl bg-brand px-4 py-3 text-lg font-bold text-white">
+                {lineLabel(selectedTransit)}
+              </span>
+              {isTransferRoute(selectedTransit) ? (
+                <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                  z przesiadką
+                </span>
+              ) : null}
+              {transferLinesLabel(selectedTransit) ? (
+                <span className="font-medium text-slate-700">→ {transferLinesLabel(selectedTransit)}</span>
+              ) : null}
             </span>
             <span className="font-medium text-slate-900">{selectedRouteName ?? 'Wybrana linia'}</span>
             <span className="text-slate-400">|</span>
@@ -309,7 +338,7 @@ export function ResultsPage() {
               {formatGtfsTimeLabel(firstDepartureTime(selectedTransit))} -&gt; {formatGtfsTimeLabel(lastArrivalTime(selectedTransit))}
             </span>
             <span className="text-slate-400">|</span>
-            <span className="font-medium text-emerald-700">Czas przejazdu: {travelDuration}</span>
+            <span className="font-medium text-brand">Czas przejazdu: {travelDuration}</span>
           </div>
         </div>
       </section>
@@ -334,24 +363,34 @@ function DepartureCard({
       onClick={onSelect}
       className={`flex items-center gap-4 rounded-2xl border p-4 m-1 text-left transition ${
         highlighted
-          ? 'border-red-200 bg-red-50 shadow-md ring-2 ring-red-500/20'
+          ? 'border-brand/30 bg-brand/10 shadow-md ring-2 ring-brand/20'
           : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
-      } ${selected ? 'outline outline-2 outline-red-500' : ''}`}
+      } ${selected ? 'outline outline-2 outline-brand' : ''}`}
     >
-      <span
-        className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-xl font-black text-white shadow-sm ${
-          highlighted ? 'bg-red-600' : 'bg-red-500'
-        }`}
-      >
-        {departure.lineLabel}
+      <span className="flex w-20 shrink-0 flex-col items-center gap-1">
+        <span
+          className={`flex h-16 w-16 items-center justify-center rounded-xl text-xl font-black text-white shadow-sm ${
+            highlighted ? 'bg-brand' : 'bg-brand/90'
+          }`}
+        >
+          {departure.lineLabel}
+        </span>
+        {departure.withTransfer ? (
+          <span className="text-center text-[10px] font-semibold leading-tight text-brand">z przesiadką</span>
+        ) : null}
+        {departure.transferLinesLabel ? (
+          <span className="text-center text-[10px] font-medium leading-tight text-slate-600">
+            → {departure.transferLinesLabel}
+          </span>
+        ) : null}
       </span>
       <span className="min-w-0">
-        <span className={`block text-sm font-semibold ${highlighted ? 'text-red-700' : 'text-slate-700'}`}>
+        <span className={`block text-sm font-semibold ${highlighted ? 'text-brand' : 'text-slate-700'}`}>
           {departure.relativeLabel}
         </span>
         <span className="mt-1 block text-2xl font-bold tracking-tight text-slate-950">{departure.exactTime}</span>
         <span className="mt-1 block truncate text-xs text-slate-500">{departure.routeName ?? 'trasa bez nazwy'}</span>
-        <span className="mt-1 block text-xs font-medium text-emerald-700">Czas: {departure.durationLabel}</span>
+        <span className="mt-1 block text-xs font-medium text-brand">Czas: {departure.durationLabel}</span>
       </span>
     </button>
   )

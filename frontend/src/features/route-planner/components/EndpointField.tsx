@@ -54,14 +54,14 @@ export function EndpointField({ label, value, onChange, onOpenMap }: EndpointFie
           <button
             type="button"
             onClick={() => onChange(emptyEndpoint('address'))}
-            className={`rounded-md px-3 py-1 text-sm ${value.mode === 'address' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600'}`}
+            className={`rounded-md px-3 py-1 text-sm ${value.mode === 'address' ? 'bg-brand/10 text-brand' : 'text-slate-600'}`}
           >
             Adres
           </button>
           <button
             type="button"
             onClick={() => onChange(emptyEndpoint('map'))}
-            className={`rounded-md px-3 py-1 text-sm ${value.mode === 'map' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600'}`}
+            className={`rounded-md px-3 py-1 text-sm ${value.mode === 'map' ? 'bg-brand/10 text-brand' : 'text-slate-600'}`}
           >
             Mapa
           </button>
