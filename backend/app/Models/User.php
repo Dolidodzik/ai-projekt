@@ -4,15 +4,13 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     public $timestamps = false;
 
@@ -27,10 +25,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password_hash',
-    ];
-
-    protected $guarded = [
-        'id',
         'is_admin',
     ];
 
@@ -48,20 +42,5 @@ class User extends Authenticatable
             'is_admin' => 'boolean',
             'created_at' => 'datetime',
         ];
-    }
-
-    public function tickets(): HasMany
-    {
-        return $this->hasMany(UserTicket::class);
-    }
-
-    public function rideHistory(): HasMany
-    {
-        return $this->hasMany(RideHistory::class);
-    }
-
-    public function reports(): HasMany
-    {
-        return $this->hasMany(Report::class);
     }
 }

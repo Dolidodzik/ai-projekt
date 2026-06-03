@@ -12,14 +12,8 @@ class AdminMiddleware
     {
         $user = $request->user();
 
-        if (! $user) {
-            return redirect()->route('login');
-        }
-
-        if (! $user->is_admin) {
-            return redirect()
-                ->route('login')
-                ->withErrors(['email' => 'Brak uprawnien administratora. Zaloguj sie na konto admina.']);
+        if (! $user || ! $user->is_admin) {
+            abort(403);
         }
 
         return $next($request);

@@ -11,4 +11,4 @@ WORKDIR /app
 
 EXPOSE 5173
 
-CMD ["sh", "-c", "if [ -f package.json ]; then npm install && npm run dev -- --host 0.0.0.0; else echo 'No package.json in ./frontend'; tail -f /dev/null; fi"]
+CMD ["sh", "-c", "if [ -f package.json ]; then npm install && npm run dev -- --host 0.0.0.0; else echo 'Brak package.json — uruchom najpierw: docker compose run --rm node npm create vite@latest . -- --template react-ts'; tail -f /dev/null; fi"]

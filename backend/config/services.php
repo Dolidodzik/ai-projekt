@@ -35,8 +35,4 @@ return [
         ],
     ],
 
-    'route_planner' => [
-        'url' => env('ROUTE_PLANNER_URL'),
-    ],
-
 ];

@@ -70,9 +70,9 @@ class MinimalTestDataSeeder extends Seeder
     protected function seedUserReportWithImages(int $userId): void
     {
         DB::table('reports')->updateOrInsert(
-            ['user_id' => $userId, 'title' => 'test report'],
+            ['user_id' => $userId, 'title' => 'Seeded test report'],
             [
-                'description' => 'testowy report',
+                'description' => 'Minimal seeded report for team integration tests.',
                 'status' => 'new',
                 'created_at' => now(),
                 'resolved_by_admin_id' => null,
@@ -82,7 +82,7 @@ class MinimalTestDataSeeder extends Seeder
 
         $reportId = DB::table('reports')
             ->where('user_id', $userId)
-            ->where('title', 'test report')
+            ->where('title', 'Seeded test report')
             ->value('id');
 
         if (! $reportId) {
@@ -147,33 +147,11 @@ class MinimalTestDataSeeder extends Seeder
             ->exists();
 
         if (! $exists) {
-            $fromTime = DB::table('gtfs_stop_times')
-                ->where('trip_id', $tripId)
-                ->where('stop_id', $fromStopId)
-                ->value('departure_time');
-            $toTime = DB::table('gtfs_stop_times')
-                ->where('trip_id', $tripId)
-                ->where('stop_id', $toStopId)
-                ->value('arrival_time');
-
-            $durationMinutes = 25;
-            if (is_string($fromTime) && is_string($toTime)) {
-                $fromParts = array_map('intval', explode(':', $fromTime));
-                $toParts = array_map('intval', explode(':', $toTime));
-                $fromSeconds = ($fromParts[0] * 3600) + ($fromParts[1] * 60) + ($fromParts[2] ?? 0);
-                $toSeconds = ($toParts[0] * 3600) + ($toParts[1] * 60) + ($toParts[2] ?? 0);
-                if ($toSeconds < $fromSeconds) {
-                    $toSeconds += 86400;
-                }
-                $durationMinutes = max(1, (int) round(($toSeconds - $fromSeconds) / 60));
-            }
-
             DB::table('ride_history')->insert([
                 'user_id' => $userId,
                 'trip_id' => $tripId,
                 'from_stop_id' => $fromStopId,
                 'to_stop_id' => $toStopId,
-                'duration_minutes' => $durationMinutes,
             ]);
         }
     }

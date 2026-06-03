@@ -13,12 +13,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             TestUserSeeder::class,
-            AdminUserSeeder::class,
-            AnnouncementExampleSeeder::class,
-            TicketTypeSeeder::class,
+            TicketTypesSeeder::class,
             GtfsSeeder::class,
             MinimalTestDataSeeder::class,
-            RideHistorySeeder::class,
         ]);
     }
 }

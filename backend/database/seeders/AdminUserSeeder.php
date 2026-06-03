@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class AdminUserSeeder extends Seeder
 {
@@ -14,34 +15,17 @@ class AdminUserSeeder extends Seeder
         $email = env('ADMIN_SEED_EMAIL');
         $password = env('ADMIN_SEED_PASSWORD');
 
-        if (! is_string($email) || $email === '') {
-            throw ValidationException::withMessages([
-                'ADMIN_SEED_EMAIL' => ['Ustaw ADMIN_SEED_EMAIL w pliku .env (katalog glowny projektu).'],
-            ]);
+        if (! $email || ! $password) {
+            throw new RuntimeException('Set ADMIN_SEED_EMAIL and ADMIN_SEED_PASSWORD in .env');
         }
 
-        if (! is_string($password) || $password === '') {
-            throw ValidationException::withMessages([
-                'ADMIN_SEED_PASSWORD' => ['Ustaw ADMIN_SEED_PASSWORD w pliku .env (katalog glowny projektu).'],
-            ]);
-        }
-
-        if (strlen($password) < 8) {
-            throw ValidationException::withMessages([
-                'ADMIN_SEED_PASSWORD' => ['Haslo admina musi miec co najmniej 8 znakow.'],
-            ]);
-        }
-
-        $user = User::updateOrCreate(
-            ['email' => strtolower($email)],
+        User::updateOrCreate(
+            ['email' => $email],
             [
-                'name' => is_string($name) && $name !== '' ? $name : 'Admin',
-                'password_hash' => $password,
+                'name' => $name ?: 'Admin',
+                'password_hash' => Hash::make($password),
+                'is_admin' => true,
             ]
         );
-
-        if (! $user->is_admin) {
-            $user->forceFill(['is_admin' => true])->save();
-        }
     }
 }

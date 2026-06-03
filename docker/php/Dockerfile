@@ -32,28 +32,20 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN { \
-        echo "upload_max_filesize=50M"; \
-        echo "post_max_size=50M"; \
-        echo "max_file_uploads=20"; \
-    } > /usr/local/etc/php/conf.d/uploads.ini
-
 ARG UID=1000
 ARG GID=1000
-RUN if ! getent group ${GID} >/dev/null; then addgroup -g ${GID} dev; fi \
-    && if ! getent passwd ${UID} >/dev/null; then adduser -D -u ${UID} -G "$(getent group ${GID} | cut -d: -f1)" -s /bin/bash dev; fi \
+RUN addgroup -g ${GID} dev \
+    && adduser -D -u ${UID} -G dev -s /bin/bash dev \
     && mkdir -p /var/www/html \
-    && chown -R ${UID}:${GID} /var/www/html
+    && chown -R dev:dev /var/www/html
 
 WORKDIR /var/www/html
 
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
-    && chmod +x /usr/local/bin/docker-entrypoint.sh
-
-USER ${UID}:${GID}
+USER dev
 
 EXPOSE 9000
 
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["php-fpm", "-F"]
+COPY --chown=dev:dev start-app.sh /usr/local/bin/start-app.sh
+RUN chmod +x /usr/local/bin/start-app.sh
+
+CMD ["/usr/local/bin/start-app.sh"]

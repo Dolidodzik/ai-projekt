@@ -10,14 +10,9 @@
     <form method="POST" action="/login" class="w-full max-w-sm border border-slate-200 rounded-md p-6 space-y-4">
         @csrf
         <h1 class="text-xl font-semibold text-[#1754d8]">Admin Login</h1>
-        @if ($errors->any())
-            <div class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {{ $errors->first() }}
-            </div>
-        @endif
         <div class="space-y-1">
             <label for="email" class="text-sm font-medium">Email</label>
-            <input id="email" name="email" type="email" required value="{{ old('email') }}" class="w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-[#1754d8]" />
+            <input id="email" name="email" type="email" required class="w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-[#1754d8]" />
         </div>
         <div class="space-y-1">
             <label for="password" class="text-sm font-medium">Password</label>
