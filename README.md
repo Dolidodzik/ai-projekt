@@ -1,23 +1,22 @@
-
-Automatyczny start (dev)
-```bash
-docker compose up -d --build
-```
-
-- `app` uruchamia automatycznie:
-  - `migrate --seed --force` gdy baza jest pusta,
-  - `migrate --force` gdy baza ma już migracje.
-- `scheduler` uruchamia się automatycznie i wykonuje zadania z harmonogramu.
-
-Ręczny import GTFS (opcjonalnie):
+## Uruchamianie
 
 ```bash
-docker compose exec app php artisan gtfs:sync
-docker compose exec app php artisan gtfs:sync --force
+cp .env.example .env
+docker compose up --build
 ```
 
-Harmonogram GTFS o 00:00
+W pliku `.env` ustaw `APP_KEY`
+
+Po pierwszym uruchomieniu kontenerów:
 
 ```bash
-docker compose logs -f scheduler
+docker compose exec app php artisan key:generate --show
 ```
+
+potem zrestartuj aplikację:
+
+```bash
+docker compose restart 
+```
+
+

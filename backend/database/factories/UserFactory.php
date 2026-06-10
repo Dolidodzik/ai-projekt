@@ -19,14 +19,13 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password_hash' => 'password',
-            'is_admin' => false,
         ];
     }
 
     public function admin(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_admin' => true,
-        ]);
+        return $this->afterCreating(function (User $user): void {
+            $user->forceFill(['is_admin' => true])->save();
+        });
     }
 }

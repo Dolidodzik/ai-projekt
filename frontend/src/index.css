@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand: #1754d8;
+  --color-brand-hover: #1549bc;
+}
