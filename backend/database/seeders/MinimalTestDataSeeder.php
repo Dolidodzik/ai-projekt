@@ -104,6 +104,7 @@ class MinimalTestDataSeeder extends Seeder
             [
                 'description' => 'testowy report',
                 'status' => 'new',
+                'status_updated_at' => now(),
                 'created_at' => now(),
                 'resolved_by_admin_id' => null,
                 'resolved_at' => null,

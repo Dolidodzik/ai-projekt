@@ -42,6 +42,7 @@ class ReportController extends Controller
                 'description' => $data['description'],
                 'created_at' => now(),
                 'status' => 'new',
+                'status_updated_at' => now(),
             ]);
 
             $files = $request->file('images', []);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminStatsController;
 use App\Models\Announcement;
 use App\Models\Image;
@@ -56,7 +57,9 @@ Route::post('/logout', function (Request $request) {
 
 Route::prefix('admin_panel')->middleware('admin')->group(function () {
     Route::get('/', [AdminStatsController::class, 'index'])->name('admin.stats');
-    Route::view('/reports', 'admin.reports')->name('admin.reports');
+    Route::get('/reports', [AdminReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/reports/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
+    Route::post('/reports/{report}/status', [AdminReportController::class, 'updateStatus'])->name('admin.reports.status');
 
     Route::get('/announcements', function () {
         $announcements = Announcement::query()

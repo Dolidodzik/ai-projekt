@@ -20,6 +20,7 @@ class Report extends Model
         'description',
         'created_at',
         'status',
+        'status_updated_at',
         'resolved_by_admin_id',
         'resolved_at',
     ];
@@ -28,6 +29,7 @@ class Report extends Model
     {
         return [
             'created_at' => 'datetime',
+            'status_updated_at' => 'datetime',
             'resolved_at' => 'datetime',
         ];
     }
