@@ -9,6 +9,10 @@ class GtfsSeeder extends Seeder
 {
     public function run(): void
     {
-        Artisan::call('gtfs:sync');
+        try {
+            Artisan::call('gtfs:sync');
+        } catch (\Throwable $e) {
+            $this->command?->warn('GTFS sync skipped: '.$e->getMessage());
+        }
     }
 }

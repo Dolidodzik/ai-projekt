@@ -27,27 +27,30 @@ class AnnouncementExampleSeeder extends Seeder
         $examples = [
             [
                 'title' => 'przykladowe ogloszenie 1',
-                'url' => 'https://placehold.co/800x600/png',
+                'width' => 800,
+                'height' => 600,
             ],
             [
                 'title' => 'przykladowe ogloszenie 2',
-                'url' => 'https://placehold.co/400x400/png',
+                'width' => 400,
+                'height' => 400,
             ],
         ];
 
         foreach ($examples as $example) {
             $slug = Str::slug($example['title']);
-            $fileName = $slug . '.png';
-            $relativePath = 'uploads/announcements/' . $fileName;
-            $body = '<p>' . e($example['title']) . '</p>';
-            $content = $body . '<p><img src="/' . $relativePath . '" alt=""></p>';
+            $fileName = $slug.'.png';
+            $relativePath = 'uploads/announcements/'.$fileName;
+            $absolutePath = $uploadsPath.'/'.$fileName;
+            $body = '<p>'.e($example['title']).'</p>';
+            $content = $body.'<p><img src="/'.$relativePath.'" alt=""></p>';
 
-            $fileBytes = file_get_contents($example['url']);
-            if ($fileBytes === false) {
-                throw new RuntimeException('Failed to download image: ' . $example['url']);
-            }
-
-            file_put_contents($uploadsPath . '/' . $fileName, $fileBytes);
+            $this->createPlaceholderImage(
+                $absolutePath,
+                $example['width'],
+                $example['height'],
+                $example['title'],
+            );
 
             Image::updateOrCreate(
                 ['file_name' => $relativePath],
@@ -64,5 +67,31 @@ class AnnouncementExampleSeeder extends Seeder
                 ]
             );
         }
+    }
+
+    private function createPlaceholderImage(string $path, int $width, int $height, string $label): void
+    {
+        if (! function_exists('imagecreatetruecolor')) {
+            throw new RuntimeException('GD extension is required to seed announcement images.');
+        }
+
+        $image = imagecreatetruecolor($width, $height);
+        $background = imagecolorallocate($image, 23, 84, 216);
+        $textColor = imagecolorallocate($image, 255, 255, 255);
+        imagefilledrectangle($image, 0, 0, $width, $height, $background);
+
+        $font = 5;
+        $textWidth = imagefontwidth($font) * strlen($label);
+        $textHeight = imagefontheight($font);
+        $x = max(0, (int) (($width - $textWidth) / 2));
+        $y = max(0, (int) (($height - $textHeight) / 2));
+        imagestring($image, $font, $x, $y, $label, $textColor);
+
+        if (! imagepng($image, $path)) {
+            imagedestroy($image);
+            throw new RuntimeException('Failed to write placeholder image: '.$path);
+        }
+
+        imagedestroy($image);
     }
 }

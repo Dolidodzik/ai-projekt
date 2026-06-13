@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminStatsController;
 use App\Models\Announcement;
 use App\Models\Image;
 use App\Models\User;
@@ -54,7 +55,7 @@ Route::post('/logout', function (Request $request) {
 })->middleware('auth')->name('logout');
 
 Route::prefix('admin_panel')->middleware('admin')->group(function () {
-    Route::view('/', 'admin.stats')->name('admin.stats');
+    Route::get('/', [AdminStatsController::class, 'index'])->name('admin.stats');
     Route::view('/reports', 'admin.reports')->name('admin.reports');
 
     Route::get('/announcements', function () {

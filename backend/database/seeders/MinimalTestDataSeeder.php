@@ -26,7 +26,7 @@ class MinimalTestDataSeeder extends Seeder
         $ticketTypes = DB::table('ticket_types')->pluck('id', 'name');
         $now = now();
 
-        $monthlyId = $ticketTypes['Monthly'] ?? null;
+        $monthlyId = $ticketTypes['Miesięczny'] ?? null;
         if ($monthlyId !== null) {
             $exists = DB::table('user_tickets')
                 ->where('user_id', $userId)
@@ -46,7 +46,7 @@ class MinimalTestDataSeeder extends Seeder
             }
         }
 
-        $minutes60Id = $ticketTypes['60 minutes'] ?? null;
+        $minutes60Id = $ticketTypes['60-minutowy'] ?? null;
         if ($minutes60Id !== null) {
             $exists = DB::table('user_tickets')
                 ->where('user_id', $userId)
