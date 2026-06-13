@@ -35,14 +35,29 @@ class MinimalTestDataSeeder extends Seeder
                 ->exists();
 
             if (! $exists) {
+                $monthlyPrice = (float) DB::table('ticket_types')->where('id', $monthlyId)->value('price');
+
                 DB::table('user_tickets')->insert([
                     'user_id' => $userId,
                     'ticket_type_id' => $monthlyId,
                     'purchase_date' => $now,
+                    'discount_amount' => 0,
+                    'final_price' => $monthlyPrice,
                     'valid_from' => $now->copy()->subDays(2),
                     'valid_until' => $now->copy()->addDays(28),
                     'is_active' => true,
                 ]);
+            } else {
+                $monthlyPrice = (float) DB::table('ticket_types')->where('id', $monthlyId)->value('price');
+
+                DB::table('user_tickets')
+                    ->where('user_id', $userId)
+                    ->where('ticket_type_id', $monthlyId)
+                    ->whereNull('final_price')
+                    ->update([
+                        'discount_amount' => 0,
+                        'final_price' => $monthlyPrice,
+                    ]);
             }
         }
 
@@ -55,14 +70,29 @@ class MinimalTestDataSeeder extends Seeder
                 ->exists();
 
             if (! $exists) {
+                $minutes60Price = (float) DB::table('ticket_types')->where('id', $minutes60Id)->value('price');
+
                 DB::table('user_tickets')->insert([
                     'user_id' => $userId,
                     'ticket_type_id' => $minutes60Id,
                     'purchase_date' => $now,
+                    'discount_amount' => 0,
+                    'final_price' => $minutes60Price,
                     'valid_from' => null,
                     'valid_until' => null,
                     'is_active' => false,
                 ]);
+            } else {
+                $minutes60Price = (float) DB::table('ticket_types')->where('id', $minutes60Id)->value('price');
+
+                DB::table('user_tickets')
+                    ->where('user_id', $userId)
+                    ->where('ticket_type_id', $minutes60Id)
+                    ->whereNull('final_price')
+                    ->update([
+                        'discount_amount' => 0,
+                        'final_price' => $minutes60Price,
+                    ]);
             }
         }
     }

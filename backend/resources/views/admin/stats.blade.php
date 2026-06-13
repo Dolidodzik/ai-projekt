@@ -1,15 +1,18 @@
 @extends('admin.layout')
 
-@section('title', 'statystyki')
+@section('title', 'Statystyki')
 
 @section('content')
-    <h1 class="mb-6 text-2xl font-semibold text-[#1754d8]">Statystyki</h1>
+    <h1 class="mb-2 text-2xl font-semibold text-[#1754d8]">Statystyki</h1>
+    <p class="mb-6 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        Dane dotyczą wyłącznie bieżącego miesiąca ({{ $periodLabel }}).
+    </p>
 
     <section class="mb-8">
-        <h2 class="mb-3 text-lg font-medium text-slate-900">wyszukiwania tras</h2>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 class="mb-3 text-lg font-medium text-slate-900">Wyszukiwania tras</h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div class="rounded-md border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">łącznie</div>
+                <div class="text-sm text-slate-500">łącznie w miesiącu</div>
                 <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($searchStats['total'], 0, ',', ' ') }}</div>
             </div>
             <div class="rounded-md border border-slate-200 p-4">
@@ -20,15 +23,11 @@
                 <div class="text-sm text-slate-500">ten tydzień</div>
                 <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($searchStats['this_week'], 0, ',', ' ') }}</div>
             </div>
-            <div class="rounded-md border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">ten miesiąc</div>
-                <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($searchStats['this_month'], 0, ',', ' ') }}</div>
-            </div>
         </div>
     </section>
 
     <section class="mb-8 rounded-md border border-slate-200 bg-slate-50 p-4">
-        <h2 class="mb-3 text-lg font-medium text-slate-900">aktywność użytkowników</h2>
+        <h2 class="mb-3 text-lg font-medium text-slate-900">Aktywność użytkowników</h2>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="rounded-md border border-slate-200 bg-white p-4">
                 <div class="text-sm text-slate-500">użytkownicy z wyszukiwaniami</div>
@@ -42,24 +41,19 @@
     </section>
 
     <section class="mb-8">
-        <h2 class="mb-3 text-lg font-medium text-slate-900">bilety</h2>
-        <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 class="mb-3 text-lg font-medium text-slate-900">Bilety</h2>
+        <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div class="rounded-md border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">sprzedane łącznie</div>
-                <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($ticketStats['total'], 0, ',', ' ') }}</div>
+                <div class="text-sm text-slate-500">sprzedane w miesiącu</div>
+                <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($ticketStats['sold'], 0, ',', ' ') }}</div>
             </div>
             <div class="rounded-md border border-slate-200 p-4">
                 <div class="text-sm text-slate-500">aktywne bilety</div>
                 <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($ticketStats['active'], 0, ',', ' ') }}</div>
             </div>
             <div class="rounded-md border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">przychód łącznie</div>
-                <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($ticketStats['revenue_total'], 2, ',', ' ') }} zł</div>
-            </div>
-            <div class="rounded-md border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">sprzedaż w tym miesiącu</div>
-                <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($ticketStats['sold_this_month'], 0, ',', ' ') }}</div>
-                <div class="mt-1 text-sm text-slate-500">{{ number_format($ticketStats['revenue_this_month'], 2, ',', ' ') }} zł</div>
+                <div class="text-sm text-slate-500">przychód w miesiącu</div>
+                <div class="mt-1 text-2xl font-semibold text-[#1754d8]">{{ number_format($ticketStats['revenue'], 2, ',', ' ') }} zł</div>
             </div>
         </div>
 
@@ -91,7 +85,7 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section>
-            <h2 class="mb-3 text-lg font-medium text-slate-900">najpopularniejsze linie</h2>
+            <h2 class="mb-3 text-lg font-medium text-slate-900">Najpopularniejsze linie</h2>
             <div class="overflow-hidden rounded-md border border-slate-200">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-slate-50">
@@ -119,7 +113,7 @@
         </section>
 
         <section>
-            <h2 class="mb-3 text-lg font-medium text-slate-900">najpopularniejsze trasy</h2>
+            <h2 class="mb-3 text-lg font-medium text-slate-900">Najpopularniejsze trasy</h2>
             <div class="overflow-hidden rounded-md border border-slate-200">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-slate-50">

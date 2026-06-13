@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 const publicLinks = [
   { to: '/', label: 'Planer' },
   { to: '/schedule', label: 'Rozklad' },
+  { to: '/announcements', label: 'Ogloszenia' },
 ]
 
 export function Navbar() {

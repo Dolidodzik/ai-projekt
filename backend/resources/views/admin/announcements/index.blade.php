@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'ogłoszenia')
+@section('title', 'Ogłoszenia')
 
 @section('content')
     <div class="mb-4 flex items-center justify-between gap-3">
