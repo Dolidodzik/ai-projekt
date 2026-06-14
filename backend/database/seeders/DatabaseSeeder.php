@@ -11,15 +11,6 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        $this->call([
-            TestUserSeeder::class,
-            AdminUserSeeder::class,
-            AnnouncementExampleSeeder::class,
-            TicketTypeSeeder::class,
-            GtfsSeeder::class,
-            MinimalTestDataSeeder::class,
-            RideHistorySeeder::class,
-            AchievementSeeder::class,
-        ]);
+        // Dane startowe pochodzą z backupu: backend/database/backups/ai2_projekt.dump
     }
 }

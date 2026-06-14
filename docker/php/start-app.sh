@@ -8,23 +8,11 @@ if [ ! -f vendor/autoload.php ]; then
   composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
 fi
 
-seed_needed() {
-php -r '
-require "vendor/autoload.php";
-$app = require "bootstrap/app.php";
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
-$hasMigrationsTable = Illuminate\Support\Facades\Schema::hasTable("migrations");
-if (! $hasMigrationsTable) { exit(0); }
-$count = (int) Illuminate\Support\Facades\DB::table("migrations")->count();
-exit($count === 0 ? 0 : 1);
-'
-}
+until php artisan migrate --force; do
+  sleep 2
+done
 
-if seed_needed; then
-  php artisan migrate --seed --force
-else
-  php artisan migrate --force
-fi
+echo "Sprawdzanie aktualnosci danych GTFS..."
+php artisan gtfs:sync || echo "GTFS sync nie powiodl sie — uzywam danych z backupu."
 
 exec php-fpm -F
