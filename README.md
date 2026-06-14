@@ -1,5 +1,7 @@
 ## Uruchamianie
 
+Pełna dokumentacja projektu: **[DOKUMENTACJA.md](./DOKUMENTACJA.md)**
+
 ```bash
 cp .env.example .env
 docker compose up --build
