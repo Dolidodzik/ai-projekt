@@ -1,4 +1,6 @@
+# Docker Compose całego projektu - backend (PHP), baza, nginx, route-planner, scheduler, frontend dev.
 services:
+  # Laravel + PHP-FPM - główna aplikacja API.
   app:
     build:
       context: ./docker/php
@@ -21,6 +23,7 @@ services:
     networks:
       - ai2_net
 
+  # Pythonowy silnik planowania tras - czyta GTFS z tej samej bazy.
   route-planner:
     build:
       context: ./route-planner
@@ -62,6 +65,7 @@ services:
     networks:
       - ai2_net
 
+  # Osobny kontener na `php artisan schedule:work` - m.in. nocny gtfs:sync.
   scheduler:
     build:
       context: ./docker/php
@@ -90,6 +94,7 @@ services:
     networks:
       - ai2_net
 
+  # Reverse proxy - serwuje API pod portem APP_PORT (domyślnie 8080).
   nginx:
     image: nginx:1.27-alpine
     container_name: ai2_nginx
@@ -104,6 +109,7 @@ services:
     networks:
       - ai2_net
 
+  # Postgres - przy pierwszym starcie może przywrócić dump z /backups.
   db:
     image: postgres:16-alpine
     container_name: ai2_db
@@ -126,6 +132,7 @@ services:
     networks:
       - ai2_net
 
+  # GUI do podglądu bazy (opcjonalnie, pod PGADMIN_PORT).
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: ai2_pgadmin
@@ -144,6 +151,7 @@ services:
     networks:
       - ai2_net
 
+  # Vite dev server dla Reacta (frontend).
   node:
     build:
       context: ./docker/node

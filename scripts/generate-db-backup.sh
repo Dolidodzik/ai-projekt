@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Generuje świeży dump bazy z działającego kontenera db -> backend/database/backups/ai2_projekt.dump
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

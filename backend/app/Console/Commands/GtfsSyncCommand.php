@@ -1,5 +1,7 @@
 <?php
 
+// Artisan: `php artisan gtfs:sync` - odpala import GTFS i wypisuje wynik jako JSON.
+
 namespace App\Console\Commands;
 
 use App\Services\GtfsImportService;
@@ -11,6 +13,7 @@ class GtfsSyncCommand extends Command
 
     protected $description = 'Download ZIP and import GTFS data';
 
+    // Wywołuje GtfsImportService; --force wymusza import nawet jak wersja feedu się nie zmieniła.
     public function handle(GtfsImportService $service): int
     {
         $result = $service->sync((bool) $this->option('force'));

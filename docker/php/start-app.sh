@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# Alternatywny start aplikacji (bez entrypointa) - migracje, GTFS sync, php-fpm.
 set -eu
 
 cd /var/www/html
@@ -13,6 +14,6 @@ until php artisan migrate --force; do
 done
 
 echo "Sprawdzanie aktualnosci danych GTFS..."
-php artisan gtfs:sync || echo "GTFS sync nie powiodl sie — uzywam danych z backupu."
+php artisan gtfs:sync || echo "GTFS sync nie powiodl sie - uzywam danych z backupu."
 
 exec php-fpm -F

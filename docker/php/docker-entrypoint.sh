@@ -1,4 +1,5 @@
 #!/bin/sh
+# Entrypoint kontenera PHP - composer, migracje, sync GTFS, potem odpala php-fpm (albo inna komenda).
 set -e
 
 cd /var/www/html
@@ -23,7 +24,7 @@ done
 
 echo "Sprawdzanie aktualnosci danych GTFS..."
 if ! php artisan gtfs:sync --no-ansi; then
-  echo "GTFS sync nie powiodl sie — uzywam danych z backupu."
+  echo "GTFS sync nie powiodl sie - uzywam danych z backupu."
 fi
 
 php artisan storage:link --force --no-ansi 2>/dev/null || true

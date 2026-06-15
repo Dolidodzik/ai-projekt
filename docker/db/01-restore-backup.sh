@@ -1,4 +1,5 @@
 #!/bin/bash
+# Skrypt init Postgresa - przy pierwszym uruchomieniu kontenera przywraca dump jeśli jest w /backups.
 set -euo pipefail
 
 if [ -f /backups/ai2_projekt.dump ]; then
@@ -12,5 +13,5 @@ if [ -f /backups/ai2_projekt.dump ]; then
     /backups/ai2_projekt.dump
   echo "Backup przywrocony pomyslnie."
 else
-  echo "Brak pliku /backups/ai2_projekt.dump — pomijam restore."
+  echo "Brak pliku /backups/ai2_projekt.dump - pomijam restore."
 fi

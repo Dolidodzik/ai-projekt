@@ -1,3 +1,4 @@
+# Obraz PHP 8.4-FPM dla Laravela - rozszerzenia pod Postgres, GD, zip itd.
 FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \

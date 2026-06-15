@@ -1,11 +1,15 @@
 <?php
 
+// Migracja: arrival_time i departure_time w gtfs_stop_times jako VARCHAR(12).
+// GTFS potrafi mieć godziny > 24:00 (np. 25:30), więc zwykły TIME w bazie nie wystarcza.
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Zmienia kolumny czasu na VARCHAR - działa na Postgresie i MySQL/MariaDB.
     public function up(): void
     {
         $driver = Schema::getConnection()->getDriverName();
@@ -19,6 +23,7 @@ return new class extends Migration
         }
     }
 
+    // Przywraca typ TIME (gdyby ktoś robił rollback).
     public function down(): void
     {
         $driver = Schema::getConnection()->getDriverName();

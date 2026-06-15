@@ -1,5 +1,8 @@
 <?php
 
+// Import GTFS - sciąga ZIP z feedu MPK, rozpakowuje i wrzuca dane do bazy (przystanki, linie, kursy itd.).
+// Jak wersja feedu się nie zmieniła, pomija import (chyba że dasz --force).
+
 namespace App\Services;
 
 use App\Models\GtfsFeedVersion;
@@ -14,6 +17,7 @@ use ZipArchive;
 
 class GtfsImportService
 {
+    // Główna metoda sync - pobiera feed, sprawdza wersję i ewentualnie importuje wszystko od zera.
     public function sync(bool $force = false): array
     {
         $url = (string) config('gtfs.feed_url');
@@ -109,6 +113,7 @@ class GtfsImportService
         }
     }
 
+    // Ściąga ZIP z podanego URL-a i zapisuje go w storage (np. gtfs/latest.zip).
     protected function downloadZip(string $url, string $relativePath): void
     {
         $full = storage_path('app/'.$relativePath);
@@ -124,6 +129,7 @@ class GtfsImportService
         }
     }
 
+    // Rozpakowuje pobrany archiwum do katalogu roboczego.
     protected function extractZip(string $zipFull, string $targetDir): void
     {
         $zip = new ZipArchive;
@@ -134,6 +140,7 @@ class GtfsImportService
         $zip->close();
     }
 
+    // Szuka folderu z plikami .txt - czasem ZIP ma jeszcze jeden podfolder w środku.
     protected function resolveDataDir(string $extractRoot): string
     {
         $entries = array_values(array_filter(scandir($extractRoot) ?: [], fn ($e) => $e !== '.' && $e !== '..'));
@@ -144,6 +151,7 @@ class GtfsImportService
         return $extractRoot;
     }
 
+    // Czyta feed_info.txt i wyciąga numer/wersję feedu (albo zakres dat jako identyfikator).
     protected function readFeedVersion(string $dataDir): ?string
     {
         $path = $this->findFile($dataDir, 'feed_info.txt');
@@ -175,6 +183,7 @@ class GtfsImportService
         return null;
     }
 
+    // Szuka pliku GTFS po nazwie (np. stops.txt), ignorując wielkość liter.
     protected function findFile(string $dir, string $name): ?string
     {
         $path = $dir.'/'.$name;
@@ -191,6 +200,7 @@ class GtfsImportService
         return null;
     }
 
+    // Czyta pierwszy wiersz danych z CSV/TXT GTFS i zwraca nagłówek + jedną linię jako tablicę.
     protected function readCsvAssoc(string $path): ?array
     {
         $handle = fopen($path, 'r');
@@ -213,6 +223,7 @@ class GtfsImportService
         return [$header, $row];
     }
 
+    // Czyści stare dane GTFS z bazy (i historię przejazdów) przed świeżym importem.
     protected function purgeGtfsRelated(): void
     {
         DB::table('ride_history')->delete();
@@ -227,6 +238,7 @@ class GtfsImportService
         DB::table('gtfs_stops')->delete();
     }
 
+    // Importuje stops.txt - przystanki z koordynatami; zwraca mapę stop_id → id w bazie.
     protected function importStops(string $dataDir): array
     {
         $path = $this->findFile($dataDir, 'stops.txt');
@@ -280,6 +292,7 @@ class GtfsImportService
         return $map;
     }
 
+    // Importuje routes.txt - linie autobusowe/tramwajowe; zwraca mapę route_id → id.
     protected function importRoutes(string $dataDir): array
     {
         $path = $this->findFile($dataDir, 'routes.txt');
@@ -333,6 +346,7 @@ class GtfsImportService
         return $map;
     }
 
+    // Importuje calendar.txt - w które dni tygodnia dany service_id jeździ.
     protected function importCalendars(string $dataDir): void
     {
         $path = $this->findFile($dataDir, 'calendar.txt');
@@ -385,6 +399,7 @@ class GtfsImportService
         }
     }
 
+    // Importuje calendar_dates.txt - wyjątki (święta, dodatkowe kursy) od zwykłego kalendarza.
     protected function importCalendarDates(string $dataDir): void
     {
         $path = $this->findFile($dataDir, 'calendar_dates.txt');
@@ -434,6 +449,7 @@ class GtfsImportService
         }
     }
 
+    // Przelecieć calendar_dates.txt i zebrać unikalne service_id (żeby potem uzupełnić kalendarze).
     protected function scanCalendarDatesServiceIds(string $path): array
     {
         $handle = fopen($path, 'r');
@@ -464,6 +480,7 @@ class GtfsImportService
         return array_keys($set);
     }
 
+    // Zakłada grupy kształtów trasy (shape_id) na podstawie shapes.txt i trips.txt.
     protected function importShapeGroups(string $dataDir): void
     {
         $ids = [];
@@ -529,6 +546,7 @@ class GtfsImportService
         }
     }
 
+    // Importuje shapes.txt - punkty polyline trasy na mapie.
     protected function importShapes(string $dataDir): void
     {
         $path = $this->findFile($dataDir, 'shapes.txt');
@@ -576,6 +594,7 @@ class GtfsImportService
         }
     }
 
+    // Importuje trips.txt - pojedyncze kursy; zwraca mapę trip_id -> id w bazie.
     protected function importTrips(string $dataDir, array $routeMap): array
     {
         $path = $this->findFile($dataDir, 'trips.txt');
@@ -648,6 +667,7 @@ class GtfsImportService
         return $map;
     }
 
+    // Zbiera service_id z trips.txt — potrzebne do domknięcia brakujących kalendarzy.
     protected function scanTripServiceIds(string $path): array
     {
         $handle = fopen($path, 'r');
@@ -678,6 +698,7 @@ class GtfsImportService
         return array_keys($set);
     }
 
+    // Jak feed nie ma calendar.txt, dorzuca sztuczny kalendarz „cały tydzień” dla brakujących service_id.
     protected function ensureCalendarsForServices(array $serviceIds): void
     {
         if ($serviceIds === []) {
@@ -717,6 +738,7 @@ class GtfsImportService
         }
     }
 
+    // Importuje stop_times.txt - godziny przyjazdu/odjazdu na każdym przystanku w kursie.
     protected function importStopTimes(string $dataDir, array $tripMap, array $stopMap): void
     {
         $path = $this->findFile($dataDir, 'stop_times.txt');
@@ -771,6 +793,7 @@ class GtfsImportService
         }
     }
 
+    // Normalizuje czas GTFS (np. 25:30:00 po północy) - obcina do max 12 znaków.
     protected function normalizeGtfsTime(mixed $value): string
     {
         $s = trim((string) $value);
@@ -781,6 +804,7 @@ class GtfsImportService
         return strlen($s) > 12 ? substr($s, 0, 12) : $s;
     }
 
+    // Zamienia flagę dnia tygodnia z GTFS na '1' albo '0'.
     protected function dayChar(mixed $v): string
     {
         $s = (string) $v;
@@ -788,6 +812,7 @@ class GtfsImportService
         return ($s === '1') ? '1' : '0';
     }
 
+    // Konwertuje datę GTFS (YYYYMMDD) na format SQL (YYYY-MM-DD).
     protected function gtfsDateToSql(mixed $v): ?string
     {
         if ($v === null || $v === '') {
@@ -801,6 +826,7 @@ class GtfsImportService
         return substr($s, 0, 4).'-'.substr($s, 4, 2).'-'.substr($s, 6, 2);
     }
 
+    // Rekurencyjnie usuwa katalog (np. stary folder po rozpakowaniu ZIP-a).
     protected function deleteDirectory(string $dir): void
     {
         if (! is_dir($dir)) {

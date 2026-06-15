@@ -52,3 +52,4 @@ backend/.phpunit.result.cache
 backend/node_modules/
 frontend/dist/
 frontend/.vite/
+nauka.md
