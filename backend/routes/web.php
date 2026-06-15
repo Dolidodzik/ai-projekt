@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminDatabaseController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminStatsController;
+use App\Http\Controllers\AdminUserController;
 use App\Models\Announcement;
 use App\Models\Image;
 use App\Models\User;
@@ -60,6 +62,22 @@ Route::prefix('admin_panel')->middleware('admin')->group(function () {
     Route::get('/reports', [AdminReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/reports/{report}', [AdminReportController::class, 'show'])->name('admin.reports.show');
     Route::post('/reports/{report}/status', [AdminReportController::class, 'updateStatus'])->name('admin.reports.status');
+    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('/users/new', [AdminUserController::class, 'create'])->name('admin.users.create');
+    Route::post('/users/new', [AdminUserController::class, 'store'])->name('admin.users.store');
+    Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('admin.users.show');
+    Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
+    Route::post('/users/{user}/edit', [AdminUserController::class, 'update'])->name('admin.users.update');
+    Route::post('/users/{user}/delete', [AdminUserController::class, 'destroy'])->name('admin.users.delete');
+
+    Route::get('/database', [AdminDatabaseController::class, 'index'])->name('admin.database.index');
+    Route::get('/database/{table}', [AdminDatabaseController::class, 'table'])->name('admin.database.table')->where('table', '[a-z][a-z0-9_]*');
+    Route::get('/database/{table}/new', [AdminDatabaseController::class, 'create'])->name('admin.database.create')->where('table', '[a-z][a-z0-9_]*');
+    Route::post('/database/{table}/new', [AdminDatabaseController::class, 'store'])->name('admin.database.store')->where('table', '[a-z][a-z0-9_]*');
+    Route::get('/database/{table}/records/{record}', [AdminDatabaseController::class, 'show'])->name('admin.database.show')->where('table', '[a-z][a-z0-9_]*');
+    Route::get('/database/{table}/records/{record}/edit', [AdminDatabaseController::class, 'edit'])->name('admin.database.edit')->where('table', '[a-z][a-z0-9_]*');
+    Route::post('/database/{table}/records/{record}/edit', [AdminDatabaseController::class, 'update'])->name('admin.database.update')->where('table', '[a-z][a-z0-9_]*');
+    Route::post('/database/{table}/records/{record}/delete', [AdminDatabaseController::class, 'destroy'])->name('admin.database.delete')->where('table', '[a-z][a-z0-9_]*');
 
     Route::get('/announcements', function () {
         $announcements = Announcement::query()
